@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Master GTO Trainer</title>
+    <style>
+        :root { --primary: #58cc02; --secondary: #1cb0f6; --wrong: #ff4b4b; --bg: #f0f2f5; --text: #3c3c3c; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .top-nav { width: 100%; max-width: 500px; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e5e5; }
+        .timer-container { width: 100%; height: 6px; background: #e5e5e5; }
+        #timer-bar { width: 100%; height: 100%; background: var(--secondary); transition: width 0.1s linear; }
+        .game-container { width: 100%; max-width: 450px; padding: 20px; text-align: center; }
+        .position-badge { background: #3c3c3c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; display: inline-block; }
+        .card-table { background: #1a472a; border-radius: 20px; padding: 30px 10px; margin: 15px 0; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
+        .playing-card { background: white; width: 70px; height: 100px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: bold; margin: 0 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+        .red { color: #d32f2f; } .black { color: #212121; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { padding: 16px; border: none; border-radius: 12px; background: white; font-weight: bold; box-shadow: 0 4px 0 #d1d1d1; cursor: pointer; }
+        #overlay { display: none; position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; padding: 25px; border-top-left-radius: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.2); z-index: 100; }
+        .btn-next { width: 100%; background: var(--primary); color: white; padding: 15px; border-radius: 12px; font-size: 1.1rem; border: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <div style="font-weight:bold">🔥 <span id="streak">0</span></div>
+    <div style="flex-grow:1; margin:0 15px; height:8px; background:#e5e5e5; border-radius:4px;"><div id="progress" style="width:0%; height:100%; background:var(--primary); border-radius:4px;"></div></div>
+    <div style="font-weight:bold; color:var(--secondary)">⭐ <span id="xp">0</span></div>
+</div>
+<div class="timer-container"><div id="timer-bar"></div></div>
+
+<div class="game-container">
+    <div class="position-badge" id="pos-label">POSIZIONE: --</div>
+    <h3 id="scenario-msg">Tutti foldano. Cosa fai?</h3>
+    <div class="card-table"><div id="hand-container"></div><div id="win-rate" style="color:white; margin-top:10px; font-size:0.8rem; opacity:0.8;"></div></div>
+    <div class="actions">
+        <button onclick="checkDecision('RAISE')">RAISE</button>
+        <button onclick="checkDecision('FOLD')">FOLD</button>
+        <button onclick="checkDecision('CALL')">CALL</button>
+        <button onclick="checkDecision('ALL-IN')">ALL-IN</button>
+    </div>
+</div>
+
+<div id="overlay">
+    <h2 id="res-title"></h2>
+    <p id="res-desc"></p>
+    <button class="btn-next" onclick="startNewRound()">PROSSIMA MANO</button>
+</div>
+
+<script>
+    // DATABASE COMPLETO DAL FILE (Estratto GTO)
+    const pokerData = [
+        // Pocket Pairs
+        { h: ['A','A'], p: ['UTG','MP','CO','BTN','SB'], a: 'RAISE', w: '85%', d: 'Sempre Raise. La mano migliore.' },
+        { h: ['J','J'], p: ['UTG','MP','CO','BTN','SB'], a: 'RAISE', w: '77%', d: 'Coppia alta, apri sempre.' },
+        { h: ['6','6'], p: ['MP','CO','BTN','SB'], a: 'RAISE', w: '63%', d: 'Da MP+ è un raise. Da UTG spesso fold (dipende dal tavolo).' },
+        { h: ['2','2'], p: ['BTN','SB'], a: 'RAISE', w: '50%', d: 'Coppie basse: raisale solo da late position o SB.' },
+        
+        // Broadways & Aces
+        { h: ['A','K'], s: 'suited', p: ['UTG','MP','CO','BTN','SB'], a: 'RAISE', w: '67%', d: 'AK Suited: Monster hand.' },
+        { h: ['A','Q'], s: 'offsuit', p: ['UTG','MP','CO','BTN','SB'], a: 'RAISE', w: '64%', d: 'AQ Off: Apri da ogni posizione.' },
+        { h: ['A','J'], s: 'offsuit', p: ['MP','CO','BTN','SB'], a: 'RAISE', w: '62%', d: 'Da UTG è borderline, da MP in poi è sempre Raise.' },
+        { h: ['A','10'], s: 'suited', p: ['UTG','MP','CO','BTN','SB'], a: 'RAISE', w: '59%', d: 'Asso-Dieci Suited ha grande valore.' },
+        { h: ['K','Q'], s: 'offsuit', p: ['CO','BTN','SB'], a: 'RAISE', w: '60%', d: 'Raise da CO/BTN. Da prime posizioni valuta il fold.' },
+        { h: ['Q','J'], s: 'suited', p: ['MP','CO','BTN','SB'], a: 'RAISE', w: '57%', d: 'Ottima giocabilità post-flop.' },
+        
+        // Suited Connectors & Hands
+        { h: ['J','10'], s: 'suited', p: ['CO','BTN','SB'], a: 'RAISE', w: '54%', d: 'Suited connectors: apri per pressione.' },
+        { h: ['9','8'], s: 'suited', p: ['BTN','SB'], a: 'RAISE', w: '48%', d: 'Mano speculativa, raisala da tardi.' },
+        { h: ['A','5'], s: 'suited', p: ['CO','BTN','SB'], a: 'RAISE', w: '51%', d: 'Ottimo per bilanciare i bluff pre-flop.' },
+        
+        // Trash (Fold)
+        { h: ['10','2'], s: 'offsuit', p: ['UTG','MP','CO','BTN','SB'], a: 'FOLD', w: '28%', d: 'Spazzatura. Fold.' },
+        { h: ['7','2'], s: 'offsuit', p: ['UTG','MP','CO','BTN','SB'], a: 'FOLD', w: '12%', d: 'La peggiore. Mai giocare.' },
+        { h: ['K','5'], s: 'offsuit', p: ['UTG','MP','CO'], a: 'FOLD', w: '45%', d: 'Re debole: folda da early/middle position.' }
+    ];
+
+    let xp = parseInt(localStorage.getItem('poker_xp_v4')) || 0;
+    let streak = parseInt(localStorage.getItem('poker_streak_v4')) || 0;
+    let timerInterval, timeLeft, currentQ;
+
+    function startTimer() {
+        timeLeft = 100;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft -= 1.25; // Circa 8 secondi per rispondere
+            document.getElementById('timer-bar').style.width = timeLeft + '%';
+            if(timeLeft <= 0) { clearInterval(timerInterval); checkDecision('TIMEOUT'); }
+        }, 100);
+    }
+
+    function startNewRound() {
+        document.getElementById('overlay').style.display = 'none';
+        currentQ = pokerData[Math.floor(Math.random() * pokerData.length)];
+        const pos = currentQ.p[Math.floor(Math.random() * currentQ.p.length)];
+        currentQ.currentPos = pos;
+
+        document.getElementById('pos-label').innerText = `POSIZIONE: ${pos}`;
+        document.getElementById('win-rate').innerText = `Prob. Vittoria: ${currentQ.w}`;
+        
+        const container = document.getElementById('hand-container');
+        container.innerHTML = '';
+        const suits = ['♠', '♥', '♦', '♣'];
+        const s1 = suits[Math.floor(Math.random()*4)];
+        const s2 = currentQ.s === 'suited' ? s1 : suits[(suits.indexOf(s1)+1)%4];
+
+        [ {v: currentQ.h[0], s: s1}, {v: currentQ.h[1], s: s2} ].forEach(c => {
+            const color = (c.s === '♥' || c.s === '♦') ? 'red' : 'black';
+            container.innerHTML += `<div class="playing-card ${color}"><div>${c.v}</div><div style="font-size:1.2rem">${c.s}</div></div>`;
+        });
+
+        document.getElementById('xp').innerText = xp;
+        document.getElementById('streak').innerText = streak;
+        document.getElementById('progress').style.width = (xp % 100) + "%";
+        startTimer();
+    }
+
+    function checkDecision(decision) {
+        clearInterval(timerInterval);
+        const title = document.getElementById('res-title');
+        const desc = document.getElementById('res-desc');
+        
+        if(decision === currentQ.a) {
+            title.innerText = "Corretto! +10 XP"; title.style.color = "var(--primary)";
+            desc.innerText = currentQ.d; xp += 10; streak++;
+        } else {
+            title.innerText = decision === 'TIMEOUT' ? "Tempo Scaduto!" : "Errore!";
+            title.style.color = "var(--wrong)";
+            desc.innerText = `La mossa corretta da ${currentQ.currentPos} era ${currentQ.a}. ${currentQ.d}`;
+            streak = 0;
+        }
+        localStorage.setItem('poker_xp_v4', xp);
+        localStorage.setItem('poker_streak_v4', streak);
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    startNewRound();
+</script>
+</body>
+</html>
