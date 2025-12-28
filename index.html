@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poker GTO Coach - Advanced Training</title>
+    <title>Poker GTO Coach - Weak Spot Training</title>
     <!-- Tailwind CSS per un design moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,80 +13,110 @@
         .action-btn:active { transform: scale(0.95); }
         @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
         .animate-pulse-soft { animation: pulse-soft 2s infinite ease-in-out; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center select-none overflow-x-hidden">
 
     <!-- Schermata di Avvio (Landing Page) -->
-    <div id="start-screen" class="fixed inset-0 z-[200] bg-gray-900 flex flex-col items-center justify-center p-6 text-center">
-        <div class="mb-6">
+    <div id="start-screen" class="fixed inset-0 z-[200] bg-gray-900 flex flex-col items-center justify-start p-6 text-center overflow-y-auto hide-scrollbar">
+        <div class="mb-6 pt-10">
             <div class="text-6xl mb-4">🏆</div>
-            <h1 class="text-4xl font-extrabold text-white mb-2 italic tracking-tight">GTO Drill Master</h1>
-            <p class="text-gray-400 max-w-xs mx-auto text-sm">Sessioni di allenamento mirate con analisi degli errori specifica.</p>
+            <h1 class="text-4xl font-extrabold text-white mb-2 italic tracking-tight uppercase">GTO Drill Master</h1>
+            <p class="text-gray-400 max-w-xs mx-auto text-sm">Sessioni di allenamento mirate con analisi storica dei progressi.</p>
         </div>
         
-        <div class="grid grid-cols-1 gap-4 w-full max-w-xs mb-8">
-            <button onclick="startApp(30, 1.0)" class="py-4 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-bold flex justify-between px-6 items-center hover:bg-green-500 transition-colors group">
+        <!-- Allenamento Standard -->
+        <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Allenamento Standard</h3>
+        <div class="grid grid-cols-1 gap-3 w-full max-w-xs mb-8">
+            <button onclick="startApp(30, 1.0, 'random')" class="py-4 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-bold flex justify-between px-6 items-center hover:bg-green-500 transition-colors group">
                 <span>Standard (30 mani)</span>
                 <span class="text-xs bg-green-500 group-hover:bg-white group-hover:text-green-500 px-2 py-1 rounded">x1.0 XP</span>
             </button>
-            <button onclick="startApp(50, 1.2)" class="py-4 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-bold flex justify-between px-6 items-center hover:bg-blue-500 transition-colors group">
+            <button onclick="startApp(50, 1.2, 'random')" class="py-4 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-bold flex justify-between px-6 items-center hover:bg-blue-500 transition-colors group">
                 <span>Pro (50 mani)</span>
                 <span class="text-xs bg-blue-500 group-hover:bg-white group-hover:text-blue-500 px-2 py-1 rounded">x1.2 XP</span>
             </button>
-            <button onclick="startApp(100, 1.5)" class="py-4 bg-gray-800 border-2 border-purple-500 text-white rounded-2xl font-bold flex justify-between px-6 items-center hover:bg-purple-500 transition-colors group">
-                <span>Endurance (100 mani)</span>
-                <span class="text-xs bg-purple-500 group-hover:bg-white group-hover:text-purple-500 px-2 py-1 rounded">x1.5 XP</span>
+        </div>
+
+        <!-- Allenamento Mirato (Novità) -->
+        <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Recupero Debolezze</h3>
+        <div class="grid grid-cols-1 gap-3 w-full max-w-xs mb-8">
+            <button id="weak-spot-btn" onclick="startApp(30, 1.5, 'weak-spot')" class="py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-bold flex justify-between px-6 items-center shadow-lg shadow-red-900/40 relative overflow-hidden group">
+                <div class="flex flex-col items-start">
+                    <span class="text-sm">FOCUS: PUNTI DEBOLI</span>
+                    <span class="text-[10px] opacity-70">30 mani mirate sui tuoi errori</span>
+                </div>
+                <span class="text-xs bg-white text-red-600 px-2 py-1 rounded">x1.5 XP</span>
             </button>
         </div>
 
-        <div class="flex space-x-12 text-gray-400 text-xs uppercase tracking-widest">
+        <button onclick="toggleHistory(true)" class="mb-10 flex items-center text-blue-400 font-bold text-sm uppercase tracking-widest hover:text-blue-300 transition-colors">
+            <span class="mr-2">📊</span> Progressi & Storico
+        </button>
+
+        <div class="flex space-x-12 text-gray-400 text-xs uppercase tracking-widest pb-10">
             <div class="flex flex-col"><span class="text-white text-xl font-bold" id="start-xp">0</span><span>XP Totali</span></div>
-            <div class="flex flex-col"><span class="text-white text-xl font-bold" id="start-streak">0</span><span>Best Streak</span></div>
+            <div class="flex flex-col"><span class="text-white text-xl font-bold" id="start-streak">0</span><span>Miglior Streak</span></div>
+        </div>
+    </div>
+
+    <!-- Schermata Storico / Statistiche (History Screen) -->
+    <div id="history-screen" class="fixed inset-0 z-[400] bg-gray-50 hidden flex-col p-6 overflow-y-auto">
+        <div class="max-w-md mx-auto w-full pb-10">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-gray-800 tracking-tight italic">IL TUO PERCORSO</h2>
+                <button onclick="toggleHistory(false)" class="p-2 bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center font-bold">✕</button>
+            </div>
+
+            <!-- Trend Card -->
+            <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mb-6">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Analisi del Trend</h3>
+                <div id="trend-analysis" class="flex items-center space-x-4">
+                    <!-- Iniettato da JS -->
+                </div>
+            </div>
+
+            <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Cronologia Sessioni</h3>
+            <div id="history-list" class="space-y-3">
+                <!-- Elenco sessioni -->
+            </div>
         </div>
     </div>
 
     <!-- Riepilogo Finale (Summary Screen) -->
     <div id="summary-screen" class="fixed inset-0 z-[300] bg-white hidden flex-col p-6 overflow-y-auto">
         <div class="max-w-md mx-auto w-full pb-10">
-            <h2 class="text-3xl font-black text-gray-800 mb-2">Sessione Conclusa!</h2>
-            <p id="summary-score" class="text-xl text-blue-600 font-bold mb-6">Punteggio: --</p>
+            <h2 class="text-4xl font-black text-gray-900 mb-2 italic">Completato!</h2>
+            <p id="summary-score" class="text-xl text-blue-600 font-bold mb-6 tracking-tight">Accuracy: --</p>
             
-            <!-- Coach Advice Card -->
-            <div class="bg-blue-50 rounded-2xl p-5 mb-6 border border-blue-100 shadow-sm">
-                <h4 class="font-bold text-blue-800 mb-2 flex items-center">
-                    <span class="mr-2 text-xl">🧠</span> Analisi del Coach
-                </h4>
-                <p id="coach-advice" class="text-sm text-blue-900 leading-relaxed mb-4">
-                    Analisi dei dati in corso...
-                </p>
-                <div id="critical-hands" class="flex flex-wrap gap-2">
-                    <!-- Mani critiche iniettate qui -->
-                </div>
+            <div class="bg-blue-50 rounded-3xl p-6 mb-6 border border-blue-100 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-6xl opacity-10">🧠</div>
+                <h4 class="font-bold text-blue-800 mb-3 flex items-center">Analisi del Coach</h4>
+                <p id="coach-advice" class="text-sm text-blue-900 leading-relaxed mb-4"></p>
+                <div id="critical-hands" class="flex flex-wrap gap-2"></div>
             </div>
 
             <div class="space-y-4 mb-8">
-                <h4 class="font-bold text-gray-400 text-xs uppercase tracking-widest">Performance per Posizione</h4>
-                <div id="error-stats" class="grid grid-cols-1 gap-3">
-                    <!-- Statistiche iniettate da JS -->
-                </div>
+                <h4 class="font-bold text-gray-400 text-[10px] uppercase tracking-[0.2em]">Dettaglio Posizioni</h4>
+                <div id="error-stats" class="grid grid-cols-1 gap-2"></div>
             </div>
 
-            <button onclick="location.reload()" class="w-full py-5 bg-gray-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform">
-                NUOVA SESSIONE
+            <button onclick="location.reload()" class="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-lg shadow-xl uppercase tracking-widest active:scale-95 transition-transform">
+                Chiudi Sessione
             </button>
         </div>
     </div>
 
-    <!-- Interfaccia App -->
+    <!-- Interfaccia App (Quiz) -->
     <div id="app-content" class="w-full flex flex-col items-center opacity-0 transition-opacity duration-500 pointer-events-none">
         <div class="w-full max-w-md bg-white border-b-2 border-gray-200 p-4 sticky top-0 z-50 flex justify-between items-center">
             <div class="flex flex-col">
-                <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Progressi</span>
+                <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest" id="mode-label">Standard</span>
                 <span class="text-gray-800 font-bold text-sm" id="session-counter">1 / 30</span>
             </div>
             <div class="flex-grow mx-4">
-                <div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
                     <div id="session-progress" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
@@ -95,43 +125,44 @@
             </div>
         </div>
 
-        <div class="w-full max-w-md h-1 bg-gray-200">
-            <div id="timer-bar" class="h-full bg-blue-400 w-full"></div>
+        <div class="w-full max-w-md h-1.5 bg-gray-100">
+            <div id="timer-bar" class="h-full bg-blue-400 w-full rounded-r-full"></div>
         </div>
 
-        <main class="w-full max-w-md p-4 flex flex-col items-center space-y-6 flex-grow">
-            <div id="position-badge" class="px-5 py-1.5 bg-gray-800 text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+        <main class="w-full max-w-md p-6 flex flex-col items-center space-y-8 flex-grow">
+            <div id="position-badge" class="px-6 py-2 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em]">
                 Posizione: --
             </div>
-            <h2 class="text-xl font-bold text-gray-700 text-center px-4 leading-tight">
-                Tutti foldano fino a te. <br><span class="text-blue-500">Qual è la scelta GTO?</span>
-            </h2>
             
-            <div class="w-full bg-emerald-800 rounded-[2.5rem] p-10 shadow-inner flex flex-col items-center relative overflow-hidden">
-                <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 24px 24px;"></div>
-                <div id="cards-container" class="flex space-x-4 relative z-10 scale-110"></div>
-                <div id="equity-badge" class="mt-8 text-emerald-100 text-xs font-bold opacity-60 uppercase tracking-widest">--</div>
+            <div class="text-center space-y-1">
+                <h2 class="text-2xl font-black text-gray-800 leading-tight">Tutti foldano.</h2>
+                <p class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Qual è la mossa GTO?</p>
+            </div>
+            
+            <div class="w-full bg-emerald-900 rounded-[3rem] p-12 shadow-2xl flex flex-col items-center relative overflow-hidden border-4 border-emerald-800">
+                <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 24px 24px;"></div>
+                <div id="cards-container" class="flex space-x-4 relative z-10 scale-125"></div>
+                <div id="equity-badge" class="mt-12 text-emerald-100 text-[10px] font-black opacity-40 uppercase tracking-[0.2em]">--</div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 w-full px-2">
-                <button onclick="handleAction('RAISE')" class="action-btn py-5 bg-white border-b-4 border-green-600 rounded-2xl text-green-600 font-black text-xl shadow-sm hover:bg-green-50">RAISE</button>
-                <button onclick="handleAction('FOLD')" class="action-btn py-5 bg-white border-b-4 border-red-600 rounded-2xl text-red-600 font-black text-xl shadow-sm hover:bg-red-50">FOLD</button>
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <button onclick="handleAction('RAISE')" class="action-btn py-5 bg-white border-b-4 border-green-600 rounded-2xl text-green-600 font-black text-xl shadow-lg active:border-b-0 hover:bg-green-50">RAISE</button>
+                <button onclick="handleAction('FOLD')" class="action-btn py-5 bg-white border-b-4 border-red-600 rounded-2xl text-red-600 font-black text-xl shadow-lg active:border-b-0 hover:bg-red-50">FOLD</button>
             </div>
         </main>
     </div>
 
     <!-- Feedback Overlay -->
-    <div id="overlay" class="fixed inset-0 bg-black/60 hidden items-end justify-center z-[100] p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-t-[2rem] p-8 transform translate-y-0 transition-transform shadow-2xl">
-            <div id="result-icon" class="text-5xl mb-4">✅</div>
-            <h3 id="result-title" class="text-3xl font-black mb-2 italic tracking-tight"></h3>
-            <p id="result-text" class="text-gray-600 mb-8 leading-relaxed text-sm"></p>
-            <button id="next-btn-text" onclick="resetRound()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-bold text-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">CONTINUA</button>
+    <div id="overlay" class="fixed inset-0 bg-black/70 hidden items-end justify-center z-[100] p-4 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-t-[2.5rem] p-8 transform translate-y-0 transition-transform shadow-2xl">
+            <div id="result-icon" class="text-6xl mb-4">✅</div>
+            <h3 id="result-title" class="text-3xl font-black mb-3 italic tracking-tighter uppercase"></h3>
+            <p id="result-text" class="text-gray-600 mb-10 leading-relaxed text-sm"></p>
+            <button id="next-btn-text" onclick="resetRound()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-bold text-xl shadow-xl active:scale-95 transition-transform uppercase tracking-widest">Continua</button>
         </div>
     </div>
 
     <script>
-        // RANGES GTO (Mappati da tabelle standard 6-Max)
         const GTO_RANGES = {
             'UTG': { perc: 15, pairs: ['AA','KK','QQ','JJ','1010','99','88','77'], suitedAces: ['AK','AQ','AJ','A10'], offsuitAces: ['AK','AQ'], suitedBroad: ['KQ','KJ','QJ'], suitedConn: ['J10','109'] },
             'MP': { perc: 18, pairs: ['AA','KK','QQ','JJ','1010','99','88','77','66'], suitedAces: ['AK','AQ','AJ','A10','A9','A8'], offsuitAces: ['AK','AQ','AJ'], suitedBroad: ['KQ','KJ','QJ','KT','QT','JT'], suitedConn: ['J10','109','98'] },
@@ -146,12 +177,14 @@
         let state = {
             totalXP: parseInt(localStorage.getItem('poker_xp')) || 0,
             bestStreak: parseInt(localStorage.getItem('poker_best_streak')) || 0,
+            sessionHistory: JSON.parse(localStorage.getItem('poker_history')) || [],
             
             sessionTotal: 0,
             sessionCurrent: 0,
             sessionCorrect: 0,
             sessionXPBonus: 1.0,
-            sessionErrors: [], // { pos, hand, type, category }
+            sessionMode: 'random',
+            sessionErrors: [],
             
             currentStreak: 0,
             currentHand: null,
@@ -159,14 +192,64 @@
             timeLeft: 100
         };
 
-        function startApp(numHands, bonus) {
+        function toggleHistory(show) {
+            const screen = document.getElementById('history-screen');
+            if(show) {
+                renderHistory();
+                screen.classList.remove('hidden');
+                screen.classList.add('flex');
+            } else {
+                screen.classList.add('hidden');
+                screen.classList.remove('flex');
+            }
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            const trendContainer = document.getElementById('trend-analysis');
+            list.innerHTML = '';
+            
+            if(state.sessionHistory.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-center py-10">Nessuna sessione completata.</p>';
+                trendContainer.innerHTML = '<p class="text-gray-500 italic text-sm">Gioca almeno 5 sessioni per vedere il trend.</p>';
+                document.getElementById('weak-spot-btn').style.opacity = '0.5';
+                document.getElementById('weak-spot-btn').onclick = null;
+                return;
+            } else {
+                document.getElementById('weak-spot-btn').style.opacity = '1';
+                document.getElementById('weak-spot-btn').onclick = () => startApp(30, 1.5, 'weak-spot');
+            }
+
+            const recent = state.sessionHistory.slice(-5);
+            const older = state.sessionHistory.slice(-10, -5);
+            const recentAcc = recent.reduce((sum, s) => sum + s.acc, 0) / recent.length;
+            const olderAcc = older.length > 0 ? older.reduce((sum, s) => sum + s.acc, 0) / older.length : 0;
+
+            if(older.length > 0) {
+                const diff = recentAcc - olderAcc;
+                const icon = diff >= 0 ? '📈' : '📉';
+                const color = diff >= 0 ? 'text-green-600' : 'text-red-600';
+                trendContainer.innerHTML = `<div class="text-3xl">${icon}</div><div><p class="${color} font-black text-lg">${diff >= 0 ? '+' : ''}${Math.round(diff)}% Precisione</p><p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Rispetto all'ultima settimana</p></div>`;
+            } else {
+                trendContainer.innerHTML = '<p class="text-blue-600 font-bold text-sm">Analisi in corso... completa altre sessioni per il trend storico.</p>';
+            }
+
+            state.sessionHistory.slice().reverse().forEach(s => {
+                const date = new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+                list.innerHTML += `<div class="bg-white p-5 rounded-3xl flex justify-between items-center shadow-sm border border-gray-100"><div class="text-left"><p class="text-[10px] font-black text-gray-300 uppercase tracking-widest">${date}</p><p class="font-black text-gray-800 italic">${s.hands} Mani</p></div><div class="text-right"><p class="text-blue-600 font-black text-xl italic">${s.acc}%</p><p class="text-[8px] text-gray-400 uppercase font-black tracking-widest">${s.score} Corrette</p></div></div>`;
+            });
+        }
+
+        function startApp(numHands, bonus, mode) {
             state.sessionTotal = numHands;
             state.sessionXPBonus = bonus;
+            state.sessionMode = mode;
             state.sessionCurrent = 0;
             state.sessionCorrect = 0;
             state.sessionErrors = [];
             state.currentStreak = 0;
 
+            document.getElementById('mode-label').innerText = mode === 'weak-spot' ? '🔥 FOCUS DEBOLEZZE' : 'Allenamento Standard';
             document.getElementById('start-screen').classList.add('opacity-0');
             setTimeout(() => {
                 document.getElementById('start-screen').style.display = 'none';
@@ -175,17 +258,25 @@
             }, 500);
         }
 
-        function getEquity(v1, v2, suited) {
-            if(v1 === v2) return (80 - CARD_VALUES.indexOf(v1) * 2) + "%";
-            let base = 50 - (CARD_VALUES.indexOf(v1) + CARD_VALUES.indexOf(v2));
-            if(suited) base += 4;
-            return Math.max(15, Math.min(68, base)) + "%";
-        }
-
         function generateHand() {
-            const pos = POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
-            const isPair = Math.random() < 0.06;
-            const isSuited = !isPair && Math.random() < 0.24;
+            let pos, category;
+            
+            // Logica Weak Spot: 80% di probabilità di pescare dagli errori storici
+            if (state.sessionMode === 'weak-spot' && state.sessionHistory.length > 0 && Math.random() < 0.8) {
+                const allErrors = state.sessionHistory.flatMap(s => s.errors || []);
+                if (allErrors.length > 0) {
+                    const randomError = allErrors[Math.floor(Math.random() * allErrors.length)];
+                    pos = randomError.pos;
+                    category = randomError.category;
+                }
+            }
+
+            // Fallback o Random
+            if (!pos) pos = POSITIONS[Math.floor(Math.random() * POSITIONS.length)];
+            
+            const isPair = category ? category === "Coppie" : Math.random() < 0.06;
+            const isSuited = category ? category === "Suited" : (!isPair && Math.random() < 0.24);
+            
             let v1, v2;
             if (isPair) v1 = v2 = CARD_VALUES[Math.floor(Math.random() * CARD_VALUES.length)];
             else {
@@ -193,26 +284,25 @@
                 v2 = CARD_VALUES[Math.floor(Math.random() * (CARD_VALUES.indexOf(v1) + 1) + (CARD_VALUES.indexOf(v1) + 1))];
                 if (!v2) v2 = CARD_VALUES[CARD_VALUES.length - 1];
             }
+            
             const handStr = v1 + v2;
             const range = GTO_RANGES[pos];
             let shouldRaise = false;
-            let category = "Broadways";
+            let finalCategory = "Broadways";
 
-            if (isPair) { 
-                category = "Coppie";
-                if (range.pairs.includes(handStr)) shouldRaise = true; 
-            }
+            if (isPair) { finalCategory = "Coppie"; if (range.pairs.includes(handStr)) shouldRaise = true; }
             else if (isSuited) {
-                category = "Suited";
+                finalCategory = "Suited";
                 if (v1 === 'A' && range.suitedAces.includes(handStr)) shouldRaise = true;
                 else if (range.suitedBroad && range.suitedBroad.includes(handStr)) shouldRaise = true;
                 else if (range.suitedConn && range.suitedConn.includes(handStr)) shouldRaise = true;
             } else {
-                category = "Offsuit";
+                finalCategory = "Offsuit";
                 if (v1 === 'A' && range.offsuitAces.includes(handStr)) shouldRaise = true;
                 else if (range.offsuitBroad && range.offsuitBroad.includes(handStr)) shouldRaise = true;
             }
-            return { pos, v1, v2, isSuited, isPair, category, correctAction: shouldRaise ? 'RAISE' : 'FOLD', equity: getEquity(v1, v2, isSuited) };
+            
+            return { pos, v1, v2, isSuited, isPair, category: finalCategory, correctAction: shouldRaise ? 'RAISE' : 'FOLD', equity: (isPair ? 80 : 50) + "%" };
         }
 
         function renderCards() {
@@ -223,11 +313,7 @@
             const suit2 = state.currentHand.isSuited ? suit1 : suits[(suits.indexOf(suit1)+1)%4];
             [ {v: state.currentHand.v1, s: suit1}, {v: state.currentHand.v1 === state.currentHand.v2 ? state.currentHand.v1 : state.currentHand.v2, s: suit2} ].forEach(c => {
                 const color = (c.s === '♥' || c.s === '♦') ? 'text-red-600' : 'text-gray-900';
-                container.innerHTML += `<div class="w-20 h-32 bg-white rounded-2xl shadow-2xl flex flex-col items-center justify-between p-3 border border-gray-100">
-                    <div class="self-start text-xl font-black ${color}">${c.v}</div>
-                    <div class="text-4xl ${color}">${c.s}</div>
-                    <div class="self-end text-xl font-black rotate-180 ${color}">${c.v}</div>
-                </div>`;
+                container.innerHTML += `<div class="w-20 h-32 bg-white rounded-2xl shadow-2xl flex flex-col items-center justify-between p-3 border border-gray-100"><div class="self-start text-xl font-black ${color}">${c.v}</div><div class="text-4xl ${color}">${c.s}</div><div class="self-end text-xl font-black rotate-180 ${color}">${c.v}</div></div>`;
             });
         }
 
@@ -236,7 +322,7 @@
             const bar = document.getElementById('timer-bar');
             clearInterval(state.timer);
             state.timer = setInterval(() => {
-                state.timeLeft -= 2.0; // 5 secondi per mossa
+                state.timeLeft -= 2.5; // Timer leggermente più veloce
                 bar.style.width = state.timeLeft + '%';
                 if(state.timeLeft <= 0) { clearInterval(state.timer); handleAction('TIMEOUT'); }
             }, 100);
@@ -245,30 +331,25 @@
         function handleAction(choice) {
             clearInterval(state.timer);
             const hand = state.currentHand;
-            const range = GTO_RANGES[hand.pos];
             const isCorrect = choice === hand.correctAction;
             const handName = `${hand.v1}${hand.v2}${hand.isSuited ? 's' : (hand.isPair ? '' : 'o')}`;
-
             state.sessionCurrent++;
             
             if (isCorrect) {
-                state.sessionCorrect++;
-                state.currentStreak++;
+                state.sessionCorrect++; state.currentStreak++;
                 if(state.currentStreak > state.bestStreak) state.bestStreak = state.currentStreak;
                 document.getElementById('result-icon').innerText = "✅";
-                document.getElementById('result-title').innerText = "Ottimo!";
-                document.getElementById('result-text').innerHTML = `Da <b>${hand.pos}</b> apriamo circa il ${range.perc}%. Questa mano (${handName}) è corretta per il <b>${hand.correctAction}</b>.`;
+                document.getElementById('result-title').innerText = "CORRETTO";
+                document.getElementById('result-text').innerHTML = `Da <b>${hand.pos}</b> apriamo circa il ${GTO_RANGES[hand.pos].perc}%. Ottima lettura della mano <b>${handName}</b>.`;
             } else {
                 state.sessionErrors.push({ pos: hand.pos, hand: handName, category: hand.category });
                 state.currentStreak = 0;
-                document.getElementById('result-icon').innerText = choice === 'TIMEOUT' ? "⏱️" : "❌";
-                document.getElementById('result-title').innerText = choice === 'TIMEOUT' ? "Troppo lento!" : "Mossa Errata";
-                document.getElementById('result-text').innerHTML = `La mossa GTO da <b>${hand.pos}</b> era <b>${hand.correctAction}</b>.<br><br>Apriamo solo il ${range.perc}% da qui; questa mano (${handName}) ${hand.correctAction === 'RAISE' ? 'è abbastanza forte.' : 'è troppo debole.'}`;
+                document.getElementById('result-icon').innerText = "❌";
+                document.getElementById('result-title').innerText = "ERRORE GTO";
+                document.getElementById('result-text').innerHTML = `La mossa corretta da <b>${hand.pos}</b> era <b>${hand.correctAction}</b>. Questa mano (${handName}) è ${hand.correctAction === 'RAISE' ? 'nel' : 'fuori dal'} range di apertura.`;
             }
-
-            if(state.sessionCurrent >= state.sessionTotal) document.getElementById('next-btn-text').innerText = "RISULTATI FINALI";
+            if(state.sessionCurrent >= state.sessionTotal) document.getElementById('next-btn-text').innerText = "VEDI RISULTATI";
             else document.getElementById('next-btn-text').innerText = "PROSSIMA MANO";
-
             saveProgress();
             document.getElementById('overlay').classList.remove('hidden');
             document.getElementById('overlay').classList.add('flex');
@@ -283,83 +364,62 @@
         }
 
         function resetRound() {
-            if(state.sessionCurrent >= state.sessionTotal) {
-                showFinalSummary();
-                return;
-            }
+            if(state.sessionCurrent >= state.sessionTotal) { showFinalSummary(); return; }
             document.getElementById('overlay').classList.add('hidden');
             document.getElementById('overlay').classList.remove('flex');
             state.currentHand = generateHand();
             document.getElementById('position-badge').innerText = `Posizione: ${state.currentHand.pos}`;
-            document.getElementById('equity-badge').innerText = `Win Rate Pre-Flop: ${state.currentHand.equity}`;
-            renderCards();
-            startTimer();
+            document.getElementById('equity-badge').innerText = `Equity stimata: ${state.currentHand.equity}`;
+            renderCards(); startTimer();
         }
 
         function showFinalSummary() {
-            const xpGained = Math.round(state.sessionCorrect * 20 * state.sessionXPBonus);
+            const acc = Math.round(state.sessionCorrect/state.sessionTotal*100);
+            const xpGained = Math.round(state.sessionCorrect * 25 * state.sessionXPBonus);
             state.totalXP += xpGained;
+
+            const sessionData = { date: new Date().toISOString(), hands: state.sessionTotal, score: state.sessionCorrect, acc: acc, errors: state.sessionErrors };
+            state.sessionHistory.push(sessionData);
+            if(state.sessionHistory.length > 50) state.sessionHistory.shift();
+            localStorage.setItem('poker_history', JSON.stringify(state.sessionHistory));
             localStorage.setItem('poker_xp', state.totalXP);
 
             document.getElementById('summary-screen').classList.remove('hidden');
             document.getElementById('summary-screen').classList.add('flex');
-            document.getElementById('summary-score').innerText = `Accuracy: ${Math.round(state.sessionCorrect/state.sessionTotal*100)}% (${state.sessionCorrect}/${state.sessionTotal})`;
+            document.getElementById('summary-score').innerText = `Accuracy della sessione: ${acc}%`;
             
-            // Analisi mani e categorie più sbagliate
-            const handCount = {};
-            const catCount = {};
-            const posCount = {};
-            
+            const handCount = {}; const catCount = {}; const posCount = {};
             state.sessionErrors.forEach(err => {
                 handCount[err.hand] = (handCount[err.hand] || 0) + 1;
                 catCount[err.category] = (catCount[err.category] || 0) + 1;
                 posCount[err.pos] = (posCount[err.pos] || 0) + 1;
             });
 
-            // Mostra mani critiche
             const topHands = Object.keys(handCount).sort((a,b) => handCount[b] - handCount[a]).slice(0, 3);
             const critContainer = document.getElementById('critical-hands');
             critContainer.innerHTML = '';
-            topHands.forEach(h => {
-                critContainer.innerHTML += `<span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">${h}</span>`;
-            });
+            topHands.forEach(h => { critContainer.innerHTML += `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-black italic">${h}</span>`; });
 
-            // Performance per posizione
             const statContainer = document.getElementById('error-stats');
             statContainer.innerHTML = '';
             POSITIONS.forEach(p => {
                 const errors = posCount[p] || 0;
-                const colorClass = errors > 3 ? 'text-red-500' : (errors > 0 ? 'text-orange-500' : 'text-green-500');
-                statContainer.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <span class="font-black text-gray-700 tracking-tighter">${p}</span>
-                        <span class="${colorClass} font-bold text-sm">${errors === 0 ? 'PERFETTO' : errors + ' ERRORI'}</span>
-                    </div>
-                `;
+                statContainer.innerHTML += `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100 shadow-sm"><span class="font-black text-gray-700 tracking-tighter italic uppercase">${p}</span><span class="${errors > 0 ? 'text-red-500' : 'text-green-600'} font-black text-[10px] tracking-widest">${errors === 0 ? 'PERFETTO' : errors + ' ERRORI'}</span></div>`;
             });
 
-            // Consiglio dinamico avanzato
             const worstCat = Object.keys(catCount).reduce((a, b) => catCount[a] > catCount[b] ? a : b, null);
-            let advice = "";
-            
-            if(!worstCat) {
-                advice = "Sessione impeccabile! La tua comprensione dei range di apertura è solida in ogni categoria.";
-            } else {
-                advice = `Il tuo punto debole principale in questa sessione sono state le <b>${worstCat}</b>. `;
-                if(worstCat === "Suited") advice += "Ricorda che le mani dello stesso seme hanno un valore extra post-flop, ma non sopravvalutarle da UTG o MP.";
-                else if(worstCat === "Coppie") advice += "Fai attenzione alle coppie basse (22-66): sono un raise obbligatorio da BTN ma spesso un fold da UTG.";
-                else if(worstCat === "Offsuit") advice += "Le mani offsuit (semi diversi) perdono molta forza man mano che ti allontani dal Bottone. Sii più rigido nel foldarle.";
-                else advice += "Ti suggerisco di concentrarti sulla memorizzazione delle combinazioni limite tra Raise e Fold.";
-                
-                if(topHands.length > 0) advice += `<br><br>In particolare, ripassa la strategia per: <b>${topHands.join(', ')}</b>.`;
-            }
-            
-            document.getElementById('coach-advice').innerHTML = advice;
+            let advice = worstCat ? `Focus sulle <b>${worstCat}</b>.` : "Sessione impeccabile!";
+            if(state.sessionMode === 'weak-spot') advice = "<b>[MODALITÀ FOCUS]</b> " + advice;
+            document.getElementById('coach-advice').innerHTML = advice + (topHands.length ? `<br>Problemi con: ${topHands.join(', ')}.` : "");
         }
 
-        // Init
+        // Inizializzazione dati e controllo pulsante Weak Spot
         document.getElementById('start-xp').innerText = state.totalXP;
         document.getElementById('start-streak').innerText = state.bestStreak;
+        if(state.sessionHistory.length === 0) {
+            document.getElementById('weak-spot-btn').style.opacity = '0.5';
+            document.getElementById('weak-spot-btn').onclick = null;
+        }
     </script>
 </body>
 </html>
