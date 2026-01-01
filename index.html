@@ -28,6 +28,7 @@
             color: white;
             overflow: hidden;
             margin: 0;
+            height: 100vh;
             height: 100dvh;
         }
 
@@ -61,20 +62,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        
-        .tables-overlay {
-            height: 100dvh;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 500;
-            background-color: #0f172a; /* Slate 900 */
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
+
         .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -144,7 +132,7 @@
             { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
             { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
             { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se alla fine del colpo il board diventa pericoloso, meglio limitarsi a chiamare invece di rilanciare." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
             { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
         ];
 
@@ -168,18 +156,18 @@
 
             // --- HELPER CATEGORIZZAZIONE MANI PRE-FLOP ---
             const analyzeHandType = (v1, v2, isSuited, isPair) => {
-                if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore." };
+                if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Mani Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore. Rilancia!" };
                 if (isPair) {
-                    if (['J','T','9','8'].includes(v1)) return { type: "Coppie Medie", advice: "Le coppie medie sono forti ma vulnerabili alle overcards. Attenzione post-flop." };
-                    return { type: "Coppie Basse", advice: "Le coppie basse (22-77) si giocano per 'Set Mining'. Se non setti al flop, spesso devi foldare." };
+                    if (['J','T','9','8'].includes(v1)) return { type: "Coppie Medie", advice: "Le coppie medie sono forti ma vulnerabili. Attenzione alle carte alte al flop." };
+                    return { type: "Coppie Basse", advice: "Le coppie basse (22-77) si giocano per 'Set Mining'. Se non trovi il tris al flop, spesso devi passare." };
                 }
                 if (isSuited) {
-                    if (v1 === 'A') return { type: "Assi Suited", advice: "Gli Assi Suited (A2s-A9s) sono ottimi per progetti di colore nut e bluff bilanciati." };
+                    if (v1 === 'A') return { type: "Assi Suited", advice: "Gli Assi Suited (A2s-A9s) sono ottimi per progetti di colore e bluff bilanciati." };
                     if (['J','T','9','8','7','6','5'].includes(v1) && ['J','T','9','8','7','6','5'].includes(v2)) return { type: "Suited Connectors", advice: "I Suited Connectors (es. 89s) giocano bene in multi-way per fare scala o colore." };
                     return { type: "Carte Suited", advice: "Le carte dello stesso seme hanno valore aggiunto, ma attenzione ai kicker deboli." };
                 }
                 if (['A','K','Q','J'].includes(v1) && ['A','K','Q','J','T'].includes(v2)) return { type: "Broadways Offsuit", advice: "Le figure offsuit (es. KQo) sono buone ma possono essere dominate. Giocale con cautela." };
-                return { type: "Mani Deboli (Junk)", advice: "Queste mani sono generalmente spazzatura. Foldale per risparmiare chips." };
+                return { type: "Mani Deboli", advice: "Queste mani sono generalmente spazzatura. Foldale per risparmiare chips." };
             };
 
             const generatePostFlop = () => {
@@ -268,7 +256,7 @@
                     category: handAnalysis.type, 
                     advice: handAnalysis.advice,
                     lesson: mode === 'open' ? `${handAnalysis.type}: ${handAnalysis.advice}` : 
-                            mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
+                            mode === 'defense' ? `Difesa (${handAnalysis.type}): ${handAnalysis.advice}` :
                             `Vs 3-Bet: ${handAnalysis.advice}`,
                     scenarioKey 
                 };
@@ -367,6 +355,11 @@
                             <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div>
                             <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tutorial</span>
                         </button>
+                        {/* Archivio in alto a destra */}
+                        <button onClick={() => setView('history')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.History /></div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Archivio</span>
+                        </button>
                         <button onClick={() => setView('tables')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
                             <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.FileText /></div>
                             <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tabelle</span>
@@ -391,9 +384,6 @@
                         </button>
                         <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-6 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl">
                             <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
-                        </button>
-                        <button onClick={() => setView('history')} className="action-btn w-full py-5 bg-slate-700 border-2 border-slate-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-slate-300'><Icons.History /> <span className="ml-4 text-white">Archivio</span></div><Icons.ChevronRight />
                         </button>
                     </div>
                 </div>
