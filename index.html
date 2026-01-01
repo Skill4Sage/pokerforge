@@ -7,13 +7,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
     <title>PokerForge - GTO Coach</title>
+    <!-- React & Babel via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -23,18 +30,41 @@
             margin: 0;
             height: 100dvh;
         }
-        .safe-pt { padding-top: calc(var(--sat) + 1.25rem); }
+
+        .safe-pt { padding-top: calc(var(--sat) + 1rem); }
         .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
+
         .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .action-btn:active { transform: scale(0.96); }
+        
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.4; transform: scale(1); }
             50% { opacity: 0.7; transform: scale(1.05); }
         }
         .animate-glow { animation: pulse-glow 4s infinite ease-in-out; }
+
         .archive-overlay {
-            height: 100dvh; width: 100%; position: fixed; top: 0; left: 0;
-            z-index: 500; background-color: #f9fafb; display: flex; flex-direction: column;
+            height: 100dvh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 500;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tables-overlay {
+            height: 100dvh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 500;
+            background-color: #0f172a; /* Slate 900 */
+            display: flex;
+            flex-direction: column;
         }
     </style>
 </head>
@@ -63,9 +93,12 @@
             Layout: () => <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>,
             Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
             ChevronLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
-            ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+            BookOpen: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+            FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
         };
 
+        // --- DATABASE RANGES GTO ---
         const OPEN_RAISE_RANGES = {
             'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77'], suited: ['AK','AQ','AJ','AT','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'] },
             'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'] },
@@ -102,7 +135,7 @@
             { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
             { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
             { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
-            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il board è tutto di un colore che non hai, sei quasi drawing dead. Passa subito." }
+            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
         ];
 
         const CARD_VALUES = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
@@ -116,6 +149,7 @@
             const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('poker_history')) || []);
             const [failedHands, setFailedHands] = useState(() => JSON.parse(localStorage.getItem('poker_fails')) || []);
             const [logoError, setLogoError] = useState(false);
+            const [activeTableTab, setActiveTableTab] = useState('RFI');
             
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
@@ -123,7 +157,7 @@
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
-            // --- HELPER CATEGORIZZAZIONE MANI PRE-FLOP ---
+            // --- LOGICHE GENERAZIONE MANI (Invariate) ---
             const analyzeHandType = (v1, v2, isSuited, isPair) => {
                 if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore." };
                 if (isPair) {
@@ -192,10 +226,8 @@
                 let r1 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 let r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 if (isPair) r2 = r1; else if (r1 === r2) r2 = CARD_VALUES[(CARD_VALUES.indexOf(r1) + 1) % 12];
-
                 const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
                 const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
-                
                 const handShort = (v1+v2).replace(/10/g, 'T');
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
@@ -217,14 +249,13 @@
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 }
 
-                // Genera analisi per questa mano
                 const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair);
 
                 return { 
                     heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], 
                     correctAction, mode, 
-                    category: handAnalysis.type, // Categoria Uniforme
-                    advice: handAnalysis.advice, // Consiglio Uniforme
+                    category: handAnalysis.type, 
+                    advice: handAnalysis.advice,
                     lesson: mode === 'open' ? `${handAnalysis.type}: ${handAnalysis.advice}` : 
                             mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
                             `Vs 3-Bet: ${handAnalysis.advice}`,
@@ -234,14 +265,12 @@
 
             const initSession = (num, type = 'random') => {
                 const bonus = { 'open': 1.0, 'defense': 1.2, 'vs3bet': 1.4, 'postflop': 1.5 }[pendingMode] * (type === 'weak' ? 1.5 : 1.0);
-                
                 let firstHand;
                 try {
                     firstHand = generateHand(pendingMode, type);
                 } catch (e) {
                     firstHand = generateHand(pendingMode, 'random');
                 }
-
                 setSession({ total: num, current: 0, correct: 0, mode: pendingMode, streak: 0, xpBonus: bonus, errors: [] });
                 setCurrentHand(firstHand);
                 setTimeLeft(100);
@@ -256,7 +285,6 @@
                              (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
                 const ok = norm === (currentHand.correct || currentHand.correctAction);
                 const final = session.current + 1 >= session.total;
-                
                 if (ok) {
                     setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 }));
                 } else {
@@ -302,35 +330,134 @@
                 );
             };
 
+            const MainLogo = () => (
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 group">
+                    <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
+                    <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden flex items-center justify-center">
+                        {!logoError ? (
+                            <img src="logo.png" alt="Logo" className="w-full h-full object-contain" onError={() => setLogoError(true)} />
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6">
+                                <Icons.Zap />
+                                <span className="text-[10px] font-black uppercase mt-2">logo.png</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
+            // --- VISTE RIFINITE ---
             if (view === 'start') return (
                 <div className="flex flex-col items-center justify-center p-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt">
-                    {/* Tasto Archivio in alto a destra */}
-                    <div className="absolute top-4 right-4 z-50 pt-[var(--sat)] flex flex-col items-center">
-                        <button onClick={() => setView('history')} className="p-3 bg-gray-800 border-2 border-gray-700 text-gray-400 rounded-2xl active:scale-95 transition-all shadow-lg">
-                            <Icons.History />
+                    {/* Barra Superiore: Tutorial e Tabelle */}
+                    <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50">
+                        <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tutorial</span>
                         </button>
-                        <span className="text-[9px] font-black text-gray-500 uppercase mt-1 tracking-widest">Archivio</span>
+                        <button onClick={() => setView('tables')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.FileText /></div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tabelle</span>
+                        </button>
                     </div>
 
-                    <div className="mt-[-20px] relative w-72 h-72">
+                    <div className="mt-4 relative w-72 h-72">
                         <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
                         <img src="logo.png" alt="Logo" className="relative z-10 w-full h-full object-contain" />
                     </div>
-                    <div className="mb-8 mt-[-10px]"><h1 className="text-[11vw] sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
+                    <div className="mb-6 mt-[-10px]"><h1 className="text-[11vw] sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
+                    
                     <div className="w-full space-y-3">
                         <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white uppercase tracking-tight font-black">Attacco</span></div><Icons.ChevronRight />
+                            <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight />
                         </button>
                         <button onClick={() => { setPendingMode('defense'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white uppercase tracking-tight font-black">Difesa</span></div><Icons.ChevronRight />
+                            <div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white">Difesa</span></div><Icons.ChevronRight />
                         </button>
                         <button onClick={() => { setPendingMode('vs3bet'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-orange-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white uppercase tracking-tight font-black">Vs 3-Bet</span></div><Icons.ChevronRight />
+                            <div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white">Vs 3-Bet</span></div><Icons.ChevronRight />
                         </button>
                         <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-6 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl">
                             <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
                         </button>
+                        <button onClick={() => setView('history')} className="action-btn w-full py-5 bg-slate-700 border-2 border-slate-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
+                            <div className='flex items-center text-slate-300'><Icons.History /> <span className="ml-4 text-white">Archivio</span></div><Icons.ChevronRight />
+                        </button>
                     </div>
+                </div>
+            );
+
+            // --- VISTA TABELLE (Nuova) ---
+            if (view === 'tables') return (
+                <div className="tables-overlay text-white select-none">
+                    <header className="flex-none border-b border-gray-800 px-6 safe-pt pb-4 shadow-sm z-10 flex justify-between items-center bg-gray-900">
+                        <h2 className="text-2xl font-black italic uppercase tracking-tighter">Tabelle GTO</h2>
+                        <button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400"><Icons.X /></button>
+                    </header>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar">
+                        <div className="space-y-4">
+                            <h3 className="text-orange-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>
+                            {Object.entries(OPEN_RAISE_RANGES).map(([pos, data]) => (
+                                <div key={pos} className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="font-black text-xl">{pos}</span>
+                                        <span className="text-xs bg-green-900 text-green-400 px-2 py-1 rounded font-mono">{data.perc}%</span>
+                                    </div>
+                                    <div className="text-xs text-gray-400 space-y-1">
+                                        <p><b className="text-white">Coppie:</b> {data.pairs[data.pairs.length-1]}+</p>
+                                        <p><b className="text-white">Suited:</b> {data.suited[data.suited.length-1].replace('s','s+')}+</p>
+                                        <p><b className="text-white">Off:</b> {data.offsuit[data.offsuit.length-1].replace('o','o+')}+</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="space-y-4 pt-4">
+                            <h3 className="text-blue-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">Difesa vs Raise</h3>
+                            <p className="text-xs text-gray-500 italic">Esempi chiave di difesa (Call / 3-Bet)</p>
+                            {Object.entries(VS_RAISE_DATA).slice(0,3).map(([scenario, data]) => (
+                                <div key={scenario} className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                                    <div className="font-black text-sm mb-2 text-blue-200">{scenario}</div>
+                                    <div className="text-xs text-gray-400 space-y-1">
+                                        <p><b className="text-orange-400">3-Bet:</b> {data.threeBet.slice(0,4).join(', ')}...</p>
+                                        <p><b className="text-blue-400">Call:</b> {data.call.slice(0,4).join(', ')}...</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            if (view === 'tutorial') return (
+                <div className="archive-overlay select-none text-gray-900">
+                    <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Tutorial</h2>
+                            <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
+                        </div>
+                    </header>
+                    <main className="archive-content px-6 pt-6 pb-24 hide-scrollbar bg-gray-50 space-y-8">
+                        <section>
+                            <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3">Filosofia della Fucina</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco, è uno strumento di addestramento GTO (Game Theory Optimal). L'obiettivo non è vincere ogni mano, ma prendere la decisione matematicamente corretta ogni volta. La vittoria è una conseguenza della disciplina.</p>
+                        </section>
+                        <section>
+                            <h3 className="text-lg font-black text-green-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Swords /> <span className="ml-2">Attacco (RFI)</span></h3>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">RFI sta per "Raise First In". Ti alleni a capire quali mani aprire quando nessuno ha giocato prima di te. Imparerai i range di apertura per ogni posizione (UTG, MP, CO, BTN, SB).</p>
+                        </section>
+                        <section>
+                            <h3 className="text-lg font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Shield /> <span className="ml-2">Difesa vs Raise</span></h3>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">Qui impari come reagire quando un avversario apre il gioco prima di te. Dovrai decidere se fare Fold, Call (vedere) o 3-Bet (rilanciare a tua volta).</p>
+                        </section>
+                        <section>
+                            <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Zap /> <span className="ml-2">Vs 3-Bet</span></h3>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">La situazione più difficile: hai aperto il gioco e qualcuno ti ha rilanciato contro. Impara a difendere il tuo range o a foldare le mani dominate.</p>
+                        </section>
+                        <section>
+                            <h3 className="text-lg font-black text-red-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Layout /> <span className="ml-2">Post-Flop</span></h3>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">L'allenamento cruciale per smettere di perdere soldi. Imparerai a leggere la "texture" del board (le carte comuni) e a capire quando la tua mano ha perso valore o quando estrarre il massimo profitto.</p>
+                        </section>
+                    </main>
                 </div>
             );
 
@@ -338,7 +465,7 @@
                 <div className="fixed inset-0 bg-gray-950 flex flex-col z-[100] px-5 safe-pt">
                     <div className="flex-none border-b border-gray-800 pb-4"><button onClick={() => setView('start')} className="flex items-center text-gray-400 font-black uppercase text-xs tracking-widest"><Icons.ChevronLeft /> Indietro</button></div>
                     <div className="flex-1 flex flex-col items-center justify-center space-y-10">
-                        <div className="text-center"><h2 className="text-4xl font-black italic uppercase leading-none">{pendingMode==='vs3bet'?'Vs 3-Bet':pendingMode==='open'?'Attacco':pendingMode==='defense'?'Difesa':'Post-Flop'}</h2><p className="text-orange-500 text-[10px] uppercase tracking-[0.3em] font-black italic">Configura Sessione</p></div>
+                        <div className="text-center"><h2 className="text-4xl font-black italic uppercase leading-none">{pendingMode==='vs3bet'?'Vs 3-Bet':pendingMode==='open'?'Attacco':pendingMode==='defense'?'Difesa':'Post-Flop'}</h2><p className="text-orange-500 text-[10px] mb-12 uppercase tracking-[0.3em] font-black italic text-center">Configura Sessione</p></div>
                         <div className="w-full max-w-xs space-y-4">
                             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Allenamento Casuale</p>
                             <div className="grid grid-cols-3 gap-2">
@@ -445,6 +572,10 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+        
+        // --- Icone Extra per Tabelle ---
+        Icons.FileText = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
+
     </script>
 </body>
 </html>
