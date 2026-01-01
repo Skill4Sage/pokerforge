@@ -7,13 +7,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
     <title>PokerForge - GTO Coach</title>
+    <!-- React & Babel via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -21,21 +28,43 @@
             color: white;
             overflow: hidden;
             margin: 0;
+            height: 100vh;
             height: 100dvh;
         }
+
         .safe-pt { padding-top: calc(var(--sat) + 1.25rem); }
-        .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
+        .safe-pb { padding-bottom: calc(var(--sab) + 1.5rem); }
+
         .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .action-btn:active { transform: scale(0.96); }
+        
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.4; transform: scale(1); }
             50% { opacity: 0.7; transform: scale(1.05); }
         }
         .animate-glow { animation: pulse-glow 4s infinite ease-in-out; }
+
+        /* Overlay Archivio con struttura flex-col fissa */
         .archive-overlay {
-            height: 100dvh; width: 100%; position: fixed; top: 0; left: 0;
-            z-index: 500; background-color: #f9fafb; display: flex; flex-direction: column;
+            height: 100dvh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background-color: #f8fafc; /* Slate 50 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
+        
+        .archive-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -44,7 +73,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- ICONE ---
         const Icons = {
             History: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
             X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
@@ -91,21 +119,21 @@
 
         // --- MOTORE PROCEDURALE POST-FLOP (15 ARCHETIPI) ---
         const POST_FLOP_ARCHETYPES = [
-            { id: 1, action: 'RAISE', cat: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain)." },
-            { id: 2, action: 'CALL', cat: "Progetti", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare." },
-            { id: 3, action: 'FOLD', cat: "Overpair", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa." },
-            { id: 4, action: 'RAISE', cat: "Top Pair", lesson: "Hai TPTK (A-K). Il board è asciutto, punta per farti pagare." },
-            { id: 5, action: 'CALL', cat: "Progetti", lesson: "Hai progetto di scala bilaterale. Il prezzo è conveniente." },
-            { id: 6, action: 'CALL', cat: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi." },
-            { id: 7, action: 'FOLD', cat: "Coppia Media", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto." },
-            { id: 8, action: 'RAISE', cat: "Trips", lesson: "Hai floppato Trips. Inizia a costruire il piatto subito." },
-            { id: 9, action: 'RAISE', cat: "Bluff", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold." },
-            { id: 10, action: 'RAISE', cat: "Two Pair", lesson: "Hai doppia coppia. Proteggi la mano dai progetti." },
-            { id: 11, action: 'FOLD', cat: "Bluff Catcher", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa." },
-            { id: 12, action: 'RAISE', cat: "Scala", lesson: "Hai scala. Vai per il massimo valore." },
-            { id: 13, action: 'CALL', cat: "Progetti", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta." },
-            { id: 14, action: 'CALL', cat: "Top Pair", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo." },
-            { id: 15, action: 'FOLD', cat: "Board Monotone", lesson: "Board tutto di un seme e tu non lo hai. Folda." }
+            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain)." },
+            { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn." },
+            { id: 3, action: 'FOLD', name: "Overpair vs Straight", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa." },
+            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai TPTK (A-K). Il board è asciutto, punta per farti pagare." },
+            { id: 5, action: 'CALL', name: "OESD (Bilaterale)", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto." },
+            { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi." },
+            { id: 7, action: 'FOLD', name: "Coppia Media vs Overcards", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto." },
+            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai floppato Trips. Inizia a costruire il piatto subito." },
+            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold." },
+            { id: 10, action: 'RAISE', name: "Two Pair", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano." },
+            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa." },
+            { id: 12, action: 'RAISE', name: "Straight (Scala)", lesson: "Hai scala. Vai per il massimo valore." },
+            { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo." },
+            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold." }
         ];
 
         const CARD_VALUES = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
@@ -118,6 +146,7 @@
             const [totalXP, setTotalXP] = useState(() => parseInt(localStorage.getItem('poker_xp')) || 0);
             const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('poker_history')) || []);
             const [failedHands, setFailedHands] = useState(() => JSON.parse(localStorage.getItem('poker_fails')) || []);
+            const [logoError, setLogoError] = useState(false);
             
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
@@ -137,16 +166,25 @@
                     case 3: v1=v2='A'; s1=s[0]; s2=s[1]; board=[['7',s[2]],['8',s[3]],['9',s[0]]]; break;
                     case 4: v1='A'; v2='K'; s1=s[0]; s2=s[1]; board=[['K',s[2]],['7',s[3]],['2',s[0]]]; break;
                     case 5: v1='J'; v2='T'; s1=s[0]; s2=s[1]; board=[['Q',s[2]],['9',s[3]],['2',s[0]]]; break;
+                    case 6: v1='8'; v2='8'; s1=s[0]; s2=s[1]; board=[['8',s[2]],['K',s[3]],['2',s[0]]]; break;
+                    case 7: v1='J'; v2='J'; s1=s[0]; s2=s[1]; board=[['A',s[2]],['K',s[3]],['Q',s[0]]]; break;
+                    case 8: v1='A'; v2='8'; s1=s[0]; s2=s[1]; board=[['A',s[2]],['A',s[3]],['2',s[0]]]; break;
+                    case 9: v1='5'; v2='4'; s1=s[0]; s2=s[1]; board=[['A',s[2]],['K',s[3]],['Q',s[0]]]; break;
+                    case 10: v1='K'; v2='Q'; s1=s[0]; s2=s[1]; board=[['K',s[2]],['Q',s[3]],['2',s[0]]]; break;
+                    case 11: v1='8'; v2='8'; s1=s[0]; s2=s[1]; board=[['A',s[2]],['K',s[3]],['Q',s[0]]]; break;
+                    case 12: v1='J'; v2='T'; s1=s[0]; s2=s[1]; board=[['9',s[2]],['8',s[3]],['2',s[0]]]; break;
+                    case 13: v1='K'; v2='J'; s1=s[0]; s2=s[1]; board=[['A',s[2]],['Q',s[3]],['4',s[0]]]; break;
+                    case 14: v1='A'; v2='J'; s1=s[0]; s2=s[1]; board=[['J',s[2]],['7',s[3]],['2',s[0]]]; break;
+                    case 15: v1='A'; v2='K'; s1=s[0]; s2=s[1]; board=[['7',s[2]],['4',s[2]],['2',s[2]]]; break;
                     default: v1=r[0]; v2=r[1]; s1=s[0]; s2=s[1]; board=[[r[4],s[2]],[r[6],s[3]],[r[9],s[0]]];
                 }
-                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.lesson, category: arche.cat, isPostFlop: true, mode: 'postflop' };
+                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.lesson, category: arche.name, isPostFlop: true, mode: 'postflop' };
             };
 
             const generateHand = (mode, type = 'random') => {
                 if (type === 'weak' && failedHands.length > 0) {
                     const fail = failedHands[Math.floor(Math.random() * failedHands.length)];
-                    if (fail.mode === 'postflop') return generatePostFlop();
-                    // Fallback se non è postflop (usa logica fail)
+                    if (fail.isPostFlop) return generatePostFlop();
                 }
 
                 if (mode === 'postflop') return generatePostFlop();
@@ -171,25 +209,27 @@
                 if (isPair) r2 = r1; else if (r1 === r2) r2 = CARD_VALUES[(CARD_VALUES.indexOf(r1) + 1) % 12];
                 const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
                 const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
-                const handShort = (v1+v2).replace(/10/g, 'T');
+                
+                const handShort = (v1+v2);
+                const dbLookup = handShort.replace(/10/g, 'T');
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
 
                 if (mode === 'open') {
                     const range = OPEN_RAISE_RANGES[heroPos];
-                    if (isPair && range.pairs.includes(handShort)) correctAction = 'RAISE';
-                    else if (isSuited && range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    else if (!isSuited && range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
+                    if (isPair && range.pairs.includes(dbLookup)) correctAction = 'RAISE';
+                    else if (isSuited && range.suited.some(h => h.startsWith(dbLookup))) correctAction = 'RAISE';
+                    else if (!isSuited && range.offsuit.some(h => h.startsWith(dbLookup))) correctAction = 'RAISE';
                 } else if (mode === 'defense') {
                     const range = VS_RAISE_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
-                    if (range.threeBet.some(h => h === full || h === handShort)) correctAction = '3-BET';
-                    else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
+                    const full = isPair ? dbLookup : dbLookup + (isSuited ? 's' : 'o');
+                    if (range.threeBet.some(h => h === full || h === dbLookup)) correctAction = '3-BET';
+                    else if (range.call.some(h => h === full || h === dbLookup)) correctAction = 'CALL';
                 } else {
                     const range = VS_3BET_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
-                    if (range.fourBet.some(h => h === full || h === handShort)) correctAction = '4-BET';
-                    else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
+                    const full = isPair ? dbLookup : dbLookup + (isSuited ? 's' : 'o');
+                    if (range.fourBet.some(h => h === full || h === dbLookup)) correctAction = '4-BET';
+                    else if (range.call.some(h => h === full || h === dbLookup)) correctAction = 'CALL';
                 }
                 return { heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], correctAction, mode, category: mode === 'open' ? 'RFI' : (mode === 'defense' ? 'Difesa' : '3-Bet') };
             };
@@ -226,6 +266,7 @@
                 const acc = Math.round((session.correct / session.total) * 100);
                 const xp = Math.round(session.correct * 25 * session.xpBonus);
                 localStorage.setItem('poker_xp', totalXP + xp);
+                setTotalXP(totalXP + xp);
                 const data = { date: new Date().toISOString(), hands: session.total, acc, mode: session.mode };
                 const newHistory = [data, ...history].slice(0, 50);
                 setHistory(newHistory);
@@ -255,7 +296,7 @@
 
             if (view === 'start') return (
                 <div className="flex flex-col items-center justify-center p-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt">
-                    <div className="mt-[-40px] relative w-72 h-72">
+                    <div className="mt-[-20px] relative w-72 h-72">
                         <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
                         <img src="logo.png" alt="Logo" className="relative z-10 w-full h-full object-contain" />
                     </div>
@@ -274,7 +315,7 @@
                             <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
                         </button>
                         <button onClick={() => setView('history')} className="action-btn w-full py-5 bg-slate-700 border-2 border-slate-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-slate-300'><Icons.History /> <span className="ml-4 text-white">Archivio</span></div><Icons.ChevronRight />
+                            <div className='flex items-center text-slate-300'><Icons.History /> <span className="ml-4 text-white uppercase tracking-tight">Archivio</span></div><Icons.ChevronRight />
                         </button>
                     </div>
                 </div>
@@ -289,9 +330,7 @@
                             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Allenamento Casuale</p>
                             <div className="grid grid-cols-3 gap-2">
                                 {[30, 50, 100].map(n => (
-                                    <button key={n} onClick={() => initSession(n)} className="action-btn py-4 bg-gray-800 border border-gray-700 text-white rounded-xl font-black text-sm">
-                                        {n} Mani
-                                    </button>
+                                    <button key={n} onClick={() => initSession(n)} className="action-btn py-4 bg-gray-800 border border-gray-700 text-white rounded-xl font-black text-sm">{n} Mani</button>
                                 ))}
                             </div>
                             <div className="pt-4 space-y-3">
@@ -303,7 +342,6 @@
                                     <div className='flex items-center'><Icons.Target /> <span className="ml-3 uppercase">Focus Punti Deboli</span></div>
                                     <span className="text-[10px] font-mono">x1.5 XP</span>
                                 </button>
-                                {failedHands.length === 0 && <p className="text-[9px] text-gray-600 text-center uppercase font-black italic">Dati insufficienti per il focus</p>}
                             </div>
                         </div>
                     </div>
@@ -313,7 +351,7 @@
             if (view === 'training' && currentHand) return (
                 <div className="fixed inset-0 bg-gray-100 flex flex-col text-gray-900 overflow-hidden">
                     <div className="bg-white border-b-2 p-5 flex justify-between items-center safe-pt">
-                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic uppercase leading-none mb-1">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
+                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic leading-none mb-1 uppercase">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
                         <div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div>
                     </div>
                     <div className="w-full h-2 bg-gray-200"><div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${timeLeft}%` }}></div></div>
@@ -328,7 +366,7 @@
                             </div>
                         )}
                         <div className="w-full bg-emerald-900 rounded-[4rem] p-10 shadow-2xl flex flex-col items-center border-8 border-emerald-800/50">
-                            <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic uppercase">Tu (Hero)</p>
+                            <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic uppercase font-black">Tu (Hero)</p>
                             <div className="flex space-x-6 scale-110"><Card v={currentHand.v1} s={currentHand.s1} /><Card v={currentHand.v2} s={currentHand.s2} /></div>
                         </div>
                         <div className="grid grid-cols-3 gap-3 w-full mt-auto safe-pb">
@@ -350,10 +388,8 @@
             );
 
             if (view === 'summary') {
-                // Calcolo della categoria più sbagliata
                 const counts = session.errors.reduce((acc, cat) => { acc[cat] = (acc[cat] || 0) + 1; return acc; }, {});
                 const mainError = Object.entries(counts).sort((a,b) => b[1]-a[1])[0]?.[0];
-                
                 return (
                     <div className="fixed inset-0 bg-white flex flex-col p-10 items-center justify-center text-center text-gray-900 select-none z-[110]">
                         <h2 className="text-5xl font-black mb-2 italic uppercase tracking-tighter leading-none text-gray-900 uppercase">Sessione Finita</h2><p className="text-xl text-blue-600 font-bold mb-8 tracking-tight font-mono uppercase italic text-center">Precisione: {Math.round((session.correct/session.total)*100)}%</p>
@@ -361,7 +397,7 @@
                         {mainError && (
                             <div className="mb-12 bg-orange-50 p-6 rounded-3xl border border-orange-100 italic font-medium text-gray-600 text-sm leading-tight">
                                 <span className="text-orange-600 font-black uppercase text-[10px] block mb-2 tracking-widest">Analisi della Fucina</span>
-                                In questa sessione hai faticato maggiormente con: <b className="text-gray-900">{mainError}</b>.
+                                Hai faticato maggiormente con: <b className="text-gray-900">{mainError}</b>.
                             </div>
                         )}
                         <button onClick={() => setView('start')} className="action-btn w-full max-w-xs py-6 bg-gray-900 text-white rounded-3xl font-black text-lg shadow-xl uppercase italic tracking-widest">Menu Principale</button>
@@ -371,15 +407,23 @@
 
             if (view === 'history') return (
                 <div className="archive-overlay select-none text-gray-900">
-                    <div className="flex-none p-6 flex justify-between items-center border-b border-gray-200 bg-white safe-pt"><h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black">Archivio</h2><button onClick={() => setView('start')} className="p-2 bg-gray-200 rounded-full text-gray-500"><Icons.X /></button></div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24 hide-scrollbar">
+                    <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Archivio</h2>
+                            <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
+                        </div>
+                    </header>
+                    <main className="archive-content px-5 pt-6 pb-20 hide-scrollbar bg-gray-50">
                         {history.length > 0 ? history.map((s, i) => (
-                            <div key={i} className="bg-white p-5 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100">
-                                <div className="text-left flex flex-col"><p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{new Date(s.date).toLocaleDateString()}</p><p className="font-black text-gray-800 italic uppercase leading-none mt-1 text-xs">{s.mode} - {s.hands} Mani</p></div>
-                                <div className="text-right text-blue-600 font-black text-2xl italic">{s.acc}%</div>
+                            <div key={i} className="bg-white p-5 mb-3 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100">
+                                <div className="text-left flex flex-col">
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">{new Date(s.date).toLocaleDateString()}</p>
+                                    <p className="font-black text-gray-800 italic uppercase leading-none text-xs">{s.mode} - {s.hands} Mani</p>
+                                </div>
+                                <div className="text-right text-blue-600 font-black text-2xl italic leading-none">{s.acc}%</div>
                             </div>
                         )) : <p className="text-gray-400 italic text-center py-20 text-sm uppercase font-black opacity-30 leading-none">Nessuna sessione registrata</p>}
-                    </div>
+                    </main>
                 </div>
             );
             return null;
