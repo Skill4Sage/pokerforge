@@ -7,20 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
     <title>PokerForge - GTO Coach</title>
-    <!-- React & Babel via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        
-        :root {
-            --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
-        }
-
+        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -30,29 +23,18 @@
             margin: 0;
             height: 100dvh;
         }
-
         .safe-pt { padding-top: calc(var(--sat) + 1.25rem); }
         .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
-
         .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .action-btn:active { transform: scale(0.96); }
-        
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.4; transform: scale(1); }
             50% { opacity: 0.7; transform: scale(1.05); }
         }
         .animate-glow { animation: pulse-glow 4s infinite ease-in-out; }
-
         .archive-overlay {
-            height: 100dvh;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 500;
-            background-color: #f9fafb;
-            display: flex;
-            flex-direction: column;
+            height: 100dvh; width: 100%; position: fixed; top: 0; left: 0;
+            z-index: 500; background-color: #f9fafb; display: flex; flex-direction: column;
         }
     </style>
 </head>
@@ -84,7 +66,6 @@
             ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         };
 
-        // --- DATABASE RANGES ---
         const OPEN_RAISE_RANGES = {
             'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77'], suited: ['AK','AQ','AJ','AT','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'] },
             'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'] },
@@ -107,21 +88,21 @@
         };
 
         const POST_FLOP_ARCHETYPES = [
-            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain).", advice: "Quando hai un 'Set' (tre carte uguali) devi puntare forte per proteggerti dai progetti di scala o colore." },
-            { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "Non aver paura di chiamare con un progetto di colore all'Asso: la matematica è dalla tua parte." },
-            { id: 3, action: 'FOLD', name: "Overpair vs Straight", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa.", advice: "Anche se hai due Assi, se il board permette una scala facile, a volte la scelta migliore è passare." },
-            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai TPTK (A-K). Il board è asciutto, punta per farti pagare.", advice: "Se hai la coppia più alta del board, punta sempre per farti pagare da chi ha una coppia inferiore." },
-            { id: 5, action: 'CALL', name: "OESD (Bilaterale)", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto.", advice: "I progetti di scala bilaterale sono ottimi per continuare a giocare se la puntata avversaria non è eccessiva." },
-            { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi.", advice: "Se hai una mano imbattibile come un 'Full', a volte è meglio lasciare che l'avversario provi a bluffare." },
-            { id: 7, action: 'FOLD', name: "Coppia Media vs Overcards", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto.", advice: "Se sul tavolo ci sono molte carte più alte della tua coppia, non rischiare: l'avversario ha spesso di meglio." },
-            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai floppato Trips. Inizia a costruire il piatto subito.", advice: "Con tre carte uguali, devi iniziare a caricare il piatto per arrivare a vincere tutte le chips dell'avversario." },
-            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold.", advice: "A volte puoi fingere di avere una mano fortissima se il tavolo è molto spaventoso per il tuo avversario." },
-            { id: 10, action: 'RAISE', name: "Two Pair", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano.", advice: "Con la doppia coppia sei quasi sempre avanti, ma punta per non far vedere carte gratis a chi insegue scale o colori." },
-            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Se l'avversario punta tutto alla fine e tu hai solo una coppia bassa, non fidarti: quasi certamente ha una mano migliore." },
-            { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Quando completi una scala, punta sempre! Devi farti pagare il massimo possibile." },
-            { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "Anche i piccoli progetti di scala possono valere una chiamata se il prezzo è basso." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se alla fine del colpo il board diventa pericoloso, meglio limitarsi a chiamare invece di rilanciare." },
-            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
+            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain).", advice: "Con i 'Set' (tre carte uguali) devi essere aggressivo per proteggerti dai progetti e costruire un piatto grosso." },
+            { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "I progetti di colore massimi (all'Asso) si giocano quasi sempre in Call o Raise, mai Fold." },
+            { id: 3, action: 'FOLD', name: "Overpair vs Straight", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa.", advice: "Non innamorarti di due Assi (AA) se il board diventa pericoloso e connesso. Disciplina!" },
+            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai TPTK (A-K). Il board è asciutto, punta per farti pagare.", advice: "Quando hai la coppia migliore con il kicker migliore, punta per farti pagare da mani peggiori." },
+            { id: 5, action: 'CALL', name: "OESD (Bilaterale)", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto.", advice: "I progetti di scala bilaterali sono molto forti. Se il prezzo è giusto, chiama sempre." },
+            { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi.", advice: "Con il 'Full' hai quasi vinto. Fai finta di essere debole per indurre l'avversario a puntare." },
+            { id: 7, action: 'FOLD', name: "Coppia Media vs Overcards", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto.", advice: "Se hai una coppia media e scendono carte alte (A, K, Q), spesso sei battuto. Risparmia chips." },
+            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai floppato Trips. Inizia a costruire il piatto subito.", advice: "I 'Trips' (tre carte uguali con una del board) sono fortissimi. Gioca aggressivo." },
+            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold.", advice: "Usa le carte spaventose sul tavolo (Assi, carte di colore) per bluffare quando l'avversario mostra debolezza." },
+            { id: 10, action: 'RAISE', name: "Two Pair", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano.", advice: "La doppia coppia è forte ma vulnerabile. Punta per non regalare carte gratis." },
+            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
+            { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
+            { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
+            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il board è tutto di un colore che non hai, sei quasi drawing dead. Passa subito." }
         ];
 
         const CARD_VALUES = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
@@ -141,6 +122,22 @@
             const [timeLeft, setTimeLeft] = useState(100);
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
+
+            // --- HELPER CATEGORIZZAZIONE MANI PRE-FLOP ---
+            const analyzeHandType = (v1, v2, isSuited, isPair) => {
+                if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore." };
+                if (isPair) {
+                    if (['J','T','9','8'].includes(v1)) return { type: "Coppie Medie", advice: "Le coppie medie sono forti ma vulnerabili alle overcards. Attenzione post-flop." };
+                    return { type: "Coppie Basse", advice: "Le coppie basse (22-77) si giocano per 'Set Mining'. Se non setti al flop, spesso devi foldare." };
+                }
+                if (isSuited) {
+                    if (v1 === 'A') return { type: "Assi Suited", advice: "Gli Assi Suited (A2s-A9s) sono ottimi per progetti di colore nut e bluff bilanciati." };
+                    if (['J','T','9','8','7','6','5'].includes(v1) && ['J','T','9','8','7','6','5'].includes(v2)) return { type: "Suited Connectors", advice: "I Suited Connectors (es. 89s) giocano bene in multi-way per fare scala o colore." };
+                    return { type: "Carte Suited", advice: "Le carte dello stesso seme hanno valore aggiunto, ma attenzione ai kicker deboli." };
+                }
+                if (['A','K','Q','J'].includes(v1) && ['A','K','Q','J','T'].includes(v2)) return { type: "Broadways Offsuit", advice: "Le figure offsuit (es. KQo) sono buone ma possono essere dominate. Giocale con cautela." };
+                return { type: "Mani Deboli (Junk)", advice: "Queste mani sono generalmente spazzatura. Foldale per risparmiare chips." };
+            };
 
             const generatePostFlop = () => {
                 const arche = POST_FLOP_ARCHETYPES[Math.floor(Math.random() * POST_FLOP_ARCHETYPES.length)];
@@ -173,10 +170,8 @@
                 if (type === 'weak' && failedHands.length > 0) {
                     const fail = failedHands[Math.floor(Math.random() * failedHands.length)];
                     if (fail && fail.isPostFlop) return generatePostFlop();
-                    // Se il 'fail' non è postflop o non valido, procedi con generazione normale (fallback)
                 }
                 
-                // Forziamo il fallback in caso di errore nella generazione weak
                 if (mode === 'postflop') return generatePostFlop();
 
                 let heroPos, villainPos, scenarioKey;
@@ -201,39 +196,49 @@
                 const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
                 const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
                 
-                const handShort = (v1+v2);
-                const dbLookup = handShort.replace(/10/g, 'T');
+                const handShort = (v1+v2).replace(/10/g, 'T');
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
 
                 if (mode === 'open') {
                     const range = OPEN_RAISE_RANGES[heroPos];
-                    if (isPair && range.pairs.includes(dbLookup)) correctAction = 'RAISE';
-                    else if (isSuited && range.suited.some(h => h.startsWith(dbLookup))) correctAction = 'RAISE';
-                    else if (!isSuited && range.offsuit.some(h => h.startsWith(dbLookup))) correctAction = 'RAISE';
+                    if (isPair && range.pairs.includes(handShort)) correctAction = 'RAISE';
+                    else if (isSuited && range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
+                    else if (!isSuited && range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
                 } else if (mode === 'defense') {
                     const range = VS_RAISE_DATA[scenarioKey];
-                    const full = isPair ? dbLookup : dbLookup + (isSuited ? 's' : 'o');
-                    if (range.threeBet.some(h => h === full || h === dbLookup)) correctAction = '3-BET';
-                    else if (range.call.some(h => h === full || h === dbLookup)) correctAction = 'CALL';
+                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    if (range.threeBet.some(h => h === full || h === handShort)) correctAction = '3-BET';
+                    else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 } else {
                     const range = VS_3BET_DATA[scenarioKey];
-                    const full = isPair ? dbLookup : dbLookup + (isSuited ? 's' : 'o');
-                    if (range.fourBet.some(h => h === full || h === dbLookup)) correctAction = '4-BET';
-                    else if (range.call.some(h => h === full || h === dbLookup)) correctAction = 'CALL';
+                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    if (range.fourBet.some(h => h === full || h === handShort)) correctAction = '4-BET';
+                    else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 }
-                return { heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], correctAction, mode, category: mode === 'open' ? 'Attacco RFI' : (mode === 'defense' ? 'Difesa vs Raise' : 'Difesa vs 3-Bet') };
+
+                // Genera analisi per questa mano
+                const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair);
+
+                return { 
+                    heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], 
+                    correctAction, mode, 
+                    category: handAnalysis.type, // Categoria Uniforme
+                    advice: handAnalysis.advice, // Consiglio Uniforme
+                    lesson: mode === 'open' ? `${handAnalysis.type}: ${handAnalysis.advice}` : 
+                            mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
+                            `Vs 3-Bet: ${handAnalysis.advice}`,
+                    scenarioKey 
+                };
             };
 
             const initSession = (num, type = 'random') => {
                 const bonus = { 'open': 1.0, 'defense': 1.2, 'vs3bet': 1.4, 'postflop': 1.5 }[pendingMode] * (type === 'weak' ? 1.5 : 1.0);
                 
-                // GENERAZIONE SICURA: Prova a generare la mano, se fallisce usa fallback random
                 let firstHand;
                 try {
                     firstHand = generateHand(pendingMode, type);
                 } catch (e) {
-                    console.error("Errore generazione weak spot, fallback a random", e);
                     firstHand = generateHand(pendingMode, 'random');
                 }
 
@@ -257,14 +262,7 @@
                 } else {
                     const errorMsg = currentHand.advice || currentHand.category;
                     setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, errorMsg] }));
-                    // Salvataggio sicuro per evitare crash futuri
-                    const failData = {
-                         mode: currentHand.mode,
-                         isPostFlop: currentHand.isPostFlop || false,
-                         // Salviamo solo dati essenziali per ricreare la logica, non lo stato intero
-                         heroPos: currentHand.heroPos,
-                         scenarioKey: currentHand.scenarioKey
-                    };
+                    const failData = { mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey };
                     const newFails = [failData, ...failedHands].slice(0, 30);
                     setFailedHands(newFails);
                     localStorage.setItem('poker_fails', JSON.stringify(newFails));
@@ -367,7 +365,7 @@
             if (view === 'training' && currentHand) return (
                 <div className="fixed inset-0 bg-gray-100 flex flex-col text-gray-900 overflow-hidden z-[50]">
                     <div className="bg-white border-b-2 p-5 flex justify-between items-center safe-pt">
-                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic leading-none mb-1 uppercase">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
+                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic uppercase leading-none mb-1 uppercase">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
                         <div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div>
                     </div>
                     <div className="w-full h-2 bg-gray-200"><div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${timeLeft}%` }}></div></div>
