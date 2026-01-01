@@ -31,7 +31,7 @@
             height: 100dvh;
         }
 
-        .safe-pt { padding-top: calc(var(--sat) + 1rem); }
+        .safe-pt { padding-top: calc(var(--sat) + 1.5rem); }
         .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
 
         .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -50,11 +50,18 @@
             top: 0;
             left: 0;
             z-index: 500;
-            background-color: #f9fafb;
+            background-color: #f8fafc; /* Slate 50 */
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-
+        
+        .archive-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         .tables-overlay {
             height: 100dvh;
             width: 100%;
@@ -65,7 +72,10 @@
             background-color: #0f172a; /* Slate 900 */
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -134,7 +144,7 @@
             { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
             { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
             { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se alla fine del colpo il board diventa pericoloso, meglio limitarsi a chiamare invece di rilanciare." },
             { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
         ];
 
@@ -149,7 +159,6 @@
             const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('poker_history')) || []);
             const [failedHands, setFailedHands] = useState(() => JSON.parse(localStorage.getItem('poker_fails')) || []);
             const [logoError, setLogoError] = useState(false);
-            const [activeTableTab, setActiveTableTab] = useState('RFI');
             
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
@@ -157,7 +166,7 @@
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
-            // --- LOGICHE GENERAZIONE MANI (Invariate) ---
+            // --- HELPER CATEGORIZZAZIONE MANI PRE-FLOP ---
             const analyzeHandType = (v1, v2, isSuited, isPair) => {
                 if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore." };
                 if (isPair) {
@@ -226,8 +235,10 @@
                 let r1 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 let r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 if (isPair) r2 = r1; else if (r1 === r2) r2 = CARD_VALUES[(CARD_VALUES.indexOf(r1) + 1) % 12];
+
                 const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
                 const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
+                
                 const handShort = (v1+v2).replace(/10/g, 'T');
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
@@ -285,6 +296,7 @@
                              (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
                 const ok = norm === (currentHand.correct || currentHand.correctAction);
                 const final = session.current + 1 >= session.total;
+                
                 if (ok) {
                     setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 }));
                 } else {
@@ -339,7 +351,7 @@
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6">
                                 <Icons.Zap />
-                                <span className="text-[10px] font-black uppercase mt-2">logo.png</span>
+                                <span className="text-[10px] font-black uppercase mt-2">logo.png mancante</span>
                             </div>
                         )}
                     </div>
@@ -401,7 +413,7 @@
                                 <div key={pos} className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-black text-xl">{pos}</span>
-                                        <span className="text-xs bg-green-900 text-green-400 px-2 py-1 rounded font-mono">{data.perc}%</span>
+                                        <span className="text-xs bg-green-900 text-green-400 px-2 py-1 rounded font-mono font-bold">RANGE {pos}</span>
                                     </div>
                                     <div className="text-xs text-gray-400 space-y-1">
                                         <p><b className="text-white">Coppie:</b> {data.pairs[data.pairs.length-1]}+</p>
