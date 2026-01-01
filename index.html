@@ -28,11 +28,10 @@
             color: white;
             overflow: hidden;
             margin: 0;
-            height: 100vh;
             height: 100dvh;
         }
 
-        .safe-pt { padding-top: calc(var(--sat) + 1.5rem); }
+        .safe-pt { padding-top: calc(var(--sat) + 1rem); }
         .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
 
         .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -61,6 +60,19 @@
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+        
+        .tables-overlay {
+            height: 100dvh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 500;
+            background-color: #0f172a; /* Slate 900 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -118,6 +130,7 @@
             'SB vs BB 3-B': { fourBet: ['AA','KK','QQ','AKs','AKo','A5s','A4s'], call: ['JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs'] }
         };
 
+        // --- MOTORE PROCEDURALE POST-FLOP ---
         const POST_FLOP_ARCHETYPES = [
             { id: 1, action: 'RAISE', name: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain).", advice: "Con i 'Set' (tre carte uguali) devi essere aggressivo per proteggerti dai progetti e costruire un piatto grosso." },
             { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "I progetti di colore massimi (all'Asso) si giocano quasi sempre in Call o Raise, mai Fold." },
@@ -132,7 +145,7 @@
             { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
             { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
             { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se alla fine del colpo il board diventa pericoloso, meglio limitarsi a chiamare invece di rilanciare." },
             { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
         ];
 
