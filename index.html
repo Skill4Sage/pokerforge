@@ -6,9 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
-    <meta name="format-detection" content="telephone=no">
     <title>PokerForge - GTO Coach</title>
-    
     <!-- React & Babel via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -28,23 +26,16 @@
             -webkit-tap-highlight-color: transparent;
             background-color: #030712;
             color: white;
-            overflow: hidden; /* Blocca scroll elastico della pagina intera */
+            overflow: hidden;
             margin: 0;
             height: 100dvh;
-            width: 100vw;
-            overscroll-behavior-y: none; /* Disabilita pull-to-refresh */
-            touch-action: manipulation; /* Disabilita doppio tocco per zoom */
-            user-select: none; /* Disabilita selezione testo */
-            -webkit-user-select: none;
         }
 
-        /* Gestione sicura delle aree con notch/barra home - AUMENTATO PADDING BOTTOM */
-        .safe-pt { padding-top: calc(var(--sat) + 1rem); }
-        .safe-pb { padding-bottom: calc(var(--sab) + 2rem); }
+        .safe-pt { padding-top: calc(var(--sat) + 1.5rem); }
+        .safe-pb { padding-bottom: calc(var(--sab) + 1rem); }
 
-        /* Feedback tattile pulsanti più reattivo */
-        .action-btn { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
-        .action-btn:active { transform: scale(0.95); }
+        .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn:active { transform: scale(0.96); }
         
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.4; transform: scale(1); }
@@ -65,6 +56,12 @@
             overflow: hidden;
         }
         
+        .archive-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .tables-overlay {
             height: 100dvh;
             width: 100%;
@@ -76,14 +73,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-        
-        /* Scroll fluido per i contenuti interni */
-        .scroll-content {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain; /* Evita che lo scroll propaghi al body */
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -119,13 +108,14 @@
             FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
         };
 
-        // --- DATABASE RANGES GTO ---
+        // --- DATABASE RANGES GTO (AGGIORNATO E CORRETTO) ---
+        // Ora include range più ampi per BTN/SB e gestisce i 10 (T)
         const OPEN_RAISE_RANGES = {
-            'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77'], suited: ['AK','AQ','AJ','AT','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'] },
-            'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'] },
-            'CO': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','76s'], offsuit: ['AK','AQ','AJ','AT'] },
-            'BTN': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','A7o','KQo','KJo','KTo','QJo','QTo','JTo'] },
-            'SB': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','QJs','QTs','Q9s','JTs','J9s','T9s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','KQo','KJo','KTo','QJo'] }
+            'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'], perc: 15 },
+            'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'], perc: 18 },
+            'CO': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','76s'], offsuit: ['AK','AQ','AJ','AT','KQo'], perc: 26 },
+            'BTN': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','A7o','KQo','KJo','KTo','QJo','QTo','JTo','J9o'], perc: 48 },
+            'SB': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','QJs','QTs','Q9s','JTs','J9s','T9s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','KQo','KJo','KTo','QJo'], perc: 42 }
         };
 
         const VS_RAISE_DATA = {
@@ -177,20 +167,33 @@
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
-            // --- HELPER CATEGORIZZAZIONE MANI PRE-FLOP ---
-            const analyzeHandType = (v1, v2, isSuited, isPair) => {
-                if (['A','K','Q'].includes(v1) && ['A','K','Q'].includes(v2)) return { type: "Mani Premium", advice: "Le mani Premium (AA, KK, AK...) vanno giocate aggressivamente per valore. Rilancia!" };
+            // --- FUNZIONE DI ANALISI AVANZATA PRE-FLOP ---
+            const analyzeHandType = (v1, v2, isSuited, isPair, pos) => {
+                const handName = isPair ? `${v1}${v2}` : `${v1}${v2}${isSuited ? 's' : 'o'}`;
+                
+                // Analisi specifica per posizione
+                if (['AA','KK','QQ','JJ','AKs','AKo'].includes(handName)) 
+                    return { type: "Mani Premium", advice: `Le mani Premium come ${handName} si rilanciano sempre per valore, da qualsiasi posizione.` };
+                
                 if (isPair) {
-                    if (['J','T','9','8'].includes(v1)) return { type: "Coppie Medie", advice: "Le coppie medie sono forti ma vulnerabili. Attenzione alle carte alte al flop." };
-                    return { type: "Coppie Basse", advice: "Le coppie basse (22-77) si giocano per 'Set Mining'. Se non trovi il tris al flop, spesso devi passare." };
+                    if (['TT','99','88'].includes(handName)) 
+                        return { type: "Coppie Medie", advice: `Le coppie medie (${handName}) sono buone ma vulnerabili. Rilancia, ma fai attenzione alle overcards al flop.` };
+                    // Correzione logica coppie basse
+                    if (pos === 'UTG' || pos === 'MP') 
+                        return { type: "Coppie Basse (Early)", advice: `Da ${pos}, le coppie basse come ${handName} sono rischiose. Spesso è meglio passarle se il tavolo è aggressivo.` };
+                    return { type: "Coppie Basse (Late)", advice: `Da ${pos}, le coppie basse (${handName}) guadagnano valore per il 'Set Mining' o per rubare i bui.` };
                 }
+                
+                // Gestione carte deboli/marginali
+                if (['72','83','94','T5','J6','Q7','K8'].some(bad => handName.includes(bad)))
+                    return { type: "Junk (Spazzatura)", advice: `Questa è una mano spazzatura. Non giocarla mai, nemmeno se sei annoiato!` };
+
                 if (isSuited) {
-                    if (v1 === 'A') return { type: "Assi Suited", advice: "Gli Assi Suited (A2s-A9s) sono ottimi per progetti di colore e bluff bilanciati." };
-                    if (['J','T','9','8','7','6','5'].includes(v1) && ['J','T','9','8','7','6','5'].includes(v2)) return { type: "Suited Connectors", advice: "I Suited Connectors (es. 89s) giocano bene in multi-way per fare scala o colore." };
-                    return { type: "Carte Suited", advice: "Le carte dello stesso seme hanno valore aggiunto, ma attenzione ai kicker deboli." };
+                    if (v1 === 'A') return { type: "Assi Suited", advice: `Gli Assi Suited (${handName}) sono ottimi per progetti di colore nut. Giocali aggressivamente da posizioni finali.` };
                 }
-                if (['A','K','Q','J'].includes(v1) && ['A','K','Q','J','T'].includes(v2)) return { type: "Broadways Offsuit", advice: "Le figure offsuit (es. KQo) sono buone ma possono essere dominate. Giocale con cautela." };
-                return { type: "Mani Deboli", advice: "Queste mani sono generalmente spazzatura. Foldale per risparmiare chips." };
+
+                // Default
+                return { type: "Mani Marginali", advice: `Questa mano (${handName}) è marginale da ${pos}. Verifica rigorosamente la tabella per non perdere chips inutilmente.` };
             };
 
             const generatePostFlop = () => {
@@ -217,7 +220,7 @@
                     case 15: v1='A'; v2='K'; s1=s[0]; s2=s[1]; board=[['7',s[2]],['4',s[2]],['2',s[2]]]; break;
                     default: v1=r[0]; v2=r[1]; s1=s[0]; s2=s[1]; board=[[r[4],s[2]],[r[6],s[3]],[r[9],s[0]]];
                 }
-                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.lesson, category: arche.name, advice: arche.advice, isPostFlop: true, mode: 'postflop' };
+                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.lesson, category: arche.name, advice: arche.advice, isPostFlop: true, mode: 'postflop', archetypeId: arche.id };
             };
 
             const generateHand = (mode, type = 'random') => {
@@ -250,15 +253,24 @@
                 const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
                 const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
                 
-                const handShort = (v1+v2).replace(/10/g, 'T');
+                // Normalizzazione per lookup (es. 10 -> T)
+                const sV1 = v1 === '10' ? 'T' : v1;
+                const sV2 = v2 === '10' ? 'T' : v2;
+                const handShort = (sV1+sV2);
+                
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
 
                 if (mode === 'open') {
                     const range = OPEN_RAISE_RANGES[heroPos];
-                    if (isPair && range.pairs.includes(handShort)) correctAction = 'RAISE';
-                    else if (isSuited && range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    else if (!isSuited && range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
+                    // Controllo specifico per coppie basse in range estesi (es. CO/BTN)
+                    if (isPair) {
+                         if (range.pairs.includes(handShort)) correctAction = 'RAISE';
+                    } else if (isSuited) {
+                         if (range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
+                    } else {
+                         if (range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
+                    }
                 } else if (mode === 'defense') {
                     const range = VS_RAISE_DATA[scenarioKey];
                     const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
@@ -271,17 +283,18 @@
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 }
 
-                const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair);
+                const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair, heroPos);
 
                 return { 
                     heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], 
                     correctAction, mode, 
                     category: handAnalysis.type, 
                     advice: handAnalysis.advice,
-                    lesson: mode === 'open' ? `${handAnalysis.type}: ${handAnalysis.advice}` : 
-                            mode === 'defense' ? `Difesa (${handAnalysis.type}): ${handAnalysis.advice}` :
+                    lesson: mode === 'open' ? `${handAnalysis.advice}` : 
+                            mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
                             `Vs 3-Bet: ${handAnalysis.advice}`,
-                    scenarioKey 
+                    scenarioKey,
+                    isPostFlop: false
                 };
             };
 
@@ -311,10 +324,10 @@
                 if (ok) {
                     setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 }));
                 } else {
-                    const errorMsg = currentHand.advice || currentHand.category;
+                    const errorMsg = currentHand.category; // Usa category per raggruppamento
                     setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, errorMsg] }));
-                    const failData = { mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey };
-                    const newFails = [failData, ...failedHands].slice(0, 30);
+                    const failData = { mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey, archetypeId: currentHand.archetypeId };
+                    const newFails = [failData, ...failedHands].slice(0, 50);
                     setFailedHands(newFails);
                     localStorage.setItem('poker_fails', JSON.stringify(newFails));
                 }
@@ -369,7 +382,7 @@
                 </div>
             );
 
-            // --- VISTE RIFINITE ---
+            // --- VISTE ---
             if (view === 'start') return (
                 <div className="flex flex-col items-center justify-center px-6 pb-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt safe-pb overflow-y-auto">
                     {/* Barra Superiore: Tutorial e Tabelle */}
@@ -412,14 +425,14 @@
                 </div>
             );
 
-            // --- VISTA TABELLE (Nuova) ---
+            // --- VISTA TABELLE ---
             if (view === 'tables') return (
                 <div className="tables-overlay text-white select-none">
                     <header className="flex-none border-b border-gray-800 px-6 safe-pt pb-4 shadow-sm z-10 flex justify-between items-center bg-gray-900">
                         <h2 className="text-2xl font-black italic uppercase tracking-tighter">Tabelle GTO</h2>
                         <button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400"><Icons.X /></button>
                     </header>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar scroll-content">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar scroll-content safe-pb">
                         <div className="space-y-4">
                             <h3 className="text-orange-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>
                             {Object.entries(OPEN_RAISE_RANGES).map(([pos, data]) => (
@@ -461,7 +474,7 @@
                             <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
                         </div>
                     </header>
-                    <main className="archive-content scroll-content px-6 pt-6 pb-24 hide-scrollbar bg-gray-50 space-y-8">
+                    <main className="archive-content scroll-content px-6 pt-6 pb-24 hide-scrollbar bg-gray-50 space-y-8 safe-pb">
                         <section>
                             <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3">Filosofia della Fucina</h3>
                             <p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco, è uno strumento di addestramento GTO (Game Theory Optimal). L'obiettivo non è vincere ogni mano, ma prendere la decisione matematicamente corretta ogni volta. La vittoria è una conseguenza della disciplina.</p>
@@ -489,7 +502,7 @@
             if (view === 'select-duration') return (
                 <div className="fixed inset-0 bg-gray-950 flex flex-col z-[100] px-5 safe-pt">
                     <div className="flex-none border-b border-gray-800 pb-4"><button onClick={() => setView('start')} className="flex items-center text-gray-400 font-black uppercase text-xs tracking-widest"><Icons.ChevronLeft /> Indietro</button></div>
-                    <div className="flex-1 flex flex-col items-center justify-center space-y-10">
+                    <div className="flex-1 flex flex-col items-center justify-center space-y-10 scroll-content safe-pb">
                         <div className="text-center"><h2 className="text-4xl font-black italic uppercase leading-none">{pendingMode==='vs3bet'?'Vs 3-Bet':pendingMode==='open'?'Attacco':pendingMode==='defense'?'Difesa':'Post-Flop'}</h2><p className="text-orange-500 text-[10px] mb-12 uppercase tracking-[0.3em] font-black italic text-center">Configura Sessione</p></div>
                         <div className="w-full max-w-xs space-y-4">
                             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Allenamento Casuale</p>
@@ -502,7 +515,7 @@
                                 <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest text-center">Analisi Errori</p>
                                 <button 
                                     disabled={failedHands.length === 0}
-                                    onClick={() => initSession(30, 'weak')} 
+                                    onClick={() => initSession(30, 'weak-spot')} 
                                     className={`action-btn w-full py-5 rounded-2xl font-black border-2 flex justify-between px-6 items-center ${failedHands.length > 0 ? 'bg-orange-600/20 border-orange-500 text-orange-400' : 'bg-gray-900 border-gray-800 text-gray-700 opacity-50'}`}>
                                     <div className='flex items-center'><Icons.Target /> <span className="ml-3 uppercase">Focus Punti Deboli</span></div>
                                     <span className="text-[10px] font-mono">x1.5 XP</span>
@@ -521,7 +534,7 @@
                         <div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div>
                     </div>
                     <div className="w-full h-2 bg-gray-200"><div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${timeLeft}%` }}></div></div>
-                    <main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content">
+                    <main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content safe-pb">
                         <div className="px-6 py-2 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-lg text-center leading-tight">
                             {currentHand.isPostFlop ? 'Analisi del Board' : `Tu sei (Hero): ${currentHand.heroPos}`}
                         </div>
@@ -563,7 +576,7 @@
                         {mainAdvice && (
                             <div className="mb-12 bg-orange-50 p-6 rounded-3xl border border-orange-100 italic font-medium text-gray-600 text-sm leading-tight text-left">
                                 <span className="text-orange-600 font-black uppercase text-[10px] block mb-2 tracking-widest">Consiglio della Fucina</span>
-                                {mainAdvice}
+                                In questa sessione hai faticato maggiormente con: <b className="text-gray-900">{mainAdvice}</b>.
                             </div>
                         )}
                         <button onClick={() => setView('start')} className="action-btn w-full max-w-xs py-6 bg-gray-900 text-white rounded-3xl font-black text-lg shadow-xl uppercase italic tracking-widest">Menu Principale</button>
@@ -579,7 +592,7 @@
                             <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
                         </div>
                     </header>
-                    <main className="archive-content scroll-content px-5 pt-6 pb-24 hide-scrollbar bg-gray-50">
+                    <main className="archive-content scroll-content px-5 pt-6 pb-24 hide-scrollbar bg-gray-50 safe-pb">
                         {history.length > 0 ? history.map((s, i) => (
                             <div key={i} className="bg-white p-5 mb-3 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100">
                                 <div className="text-left flex flex-col">
