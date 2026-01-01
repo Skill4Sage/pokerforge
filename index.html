@@ -38,9 +38,9 @@
             -webkit-user-select: none;
         }
 
-        /* Gestione sicura delle aree con notch/barra home */
+        /* Gestione sicura delle aree con notch/barra home - AUMENTATO PADDING BOTTOM */
         .safe-pt { padding-top: calc(var(--sat) + 1rem); }
-        .safe-pb { padding-bottom: calc(var(--sab) + 1.5rem); }
+        .safe-pb { padding-bottom: calc(var(--sab) + 2rem); }
 
         /* Feedback tattile pulsanti più reattivo */
         .action-btn { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
@@ -371,7 +371,7 @@
 
             // --- VISTE RIFINITE ---
             if (view === 'start') return (
-                <div className="flex flex-col items-center justify-center p-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt">
+                <div className="flex flex-col items-center justify-center px-6 pb-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt safe-pb overflow-y-auto">
                     {/* Barra Superiore: Tutorial e Tabelle */}
                     <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50">
                         <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
@@ -395,7 +395,7 @@
                     </div>
                     <div className="mb-6 mt-[-10px]"><h1 className="text-[11vw] sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
                     
-                    <div className="w-full space-y-3">
+                    <div className="w-full space-y-3 pb-8">
                         <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
                             <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight />
                         </button>
