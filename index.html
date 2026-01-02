@@ -115,7 +115,7 @@
             'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'], perc: 15 },
             'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'], perc: 18 },
             'CO': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','76s'], offsuit: ['AK','AQ','AJ','AT','KQo'], perc: 26 },
-            'BTN': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','A7o','KQo','KJo','KTo','QJo','QTo','JTo','J9o'], perc: 48 },
+            'BTN': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','A7o','KQo','KJo','KTo','QJo','QTo','JTo','J9o'], perc: 48 },
             'SB': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22'], suited: ['AK','AQ','AJ','AT','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','QJs','QTs','Q9s','JTs','J9s','T9s','87s','76s','65s','54s'], offsuit: ['AK','AQ','AJ','AT','A9o','A8o','KQo','KJo','KTo','QJo'], perc: 42 }
         };
 
@@ -440,7 +440,7 @@
             
             // Re-introdotto il componente Logo che gestisce l'immagine
             const MainLogo = () => (
-                <div className="relative w-72 h-72 sm:w-80 sm:h-80 group mb-6 mt-4">
+                <div className="relative w-56 h-56 sm:w-80 sm:h-80 group mb-6 mt-4">
                     <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
                     <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden flex items-center justify-center">
                         {!logoError ? (
@@ -456,7 +456,7 @@
             );
 
             if (view === 'start') return (
-                <div className="flex flex-col items-center justify-center px-6 pb-6 text-center select-none w-full max-w-md mx-auto min-h-screen safe-pt safe-pb overflow-y-auto">
+                <div className="flex flex-col items-center justify-center px-6 pb-24 text-center select-none w-full max-w-md mx-auto h-full safe-pt safe-pb overflow-y-auto">
                     <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50">
                         <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
                             <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div>
