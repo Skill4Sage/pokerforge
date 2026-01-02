@@ -535,8 +535,13 @@
                     </div>
                     <div className="w-full h-2 bg-gray-200"><div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${timeLeft}%` }}></div></div>
                     <main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content safe-pb">
-                        <div className="px-6 py-2 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-lg text-center leading-tight">
-                            {currentHand.isPostFlop ? 'Analisi del Board' : `Tu sei (Hero): ${currentHand.heroPos}`}
+                        <div className="w-full max-w-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-6 py-4 shadow-xl text-center border-2 border-blue-500">
+                            <div className="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1">
+                            {currentHand.isPostFlop ? 'Situazione' : 'La Tua Posizione'}
+                        </div>
+                            <div className="text-2xl font-black italic">
+                                {currentHand.isPostFlop ? 'Analisi Board' : currentHand.heroPos}
+                        </div>
                         </div>
                         {currentHand.isPostFlop && (
                             <div className="flex flex-col items-center space-y-3 w-full animate-in fade-in slide-in-from-top-4">
