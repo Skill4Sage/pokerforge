@@ -132,20 +132,20 @@
         };
 
         const POST_FLOP_ARCHETYPES = [
-            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu (Hero) hai un Set. Estrai valore subito contro l'Avversario (Villain).", advice: "Con i 'Set' (tre carte uguali) devi essere aggressivo per proteggerti dai progetti e costruire un piatto grosso." },
+            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu hai un Tris. Estrai valore subito contro l'Avversario", advice: "Con i 'Tris' (tre carte uguali) devi essere aggressivo per proteggerti dai progetti e costruire un piatto grosso." },
             { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "I progetti di colore massimi (all'Asso) si giocano quasi sempre in Call o Raise, mai Fold." },
             { id: 3, action: 'FOLD', name: "Overpair vs Straight", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa.", advice: "Non innamorarti di due Assi (AA) se il board diventa pericoloso e connesso. Disciplina!" },
-            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai TPTK (A-K). Il board è asciutto, punta per farti pagare.", advice: "Quando hai la coppia migliore con il kicker migliore, punta per farti pagare da mani peggiori." },
+            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai Top Pair Top Kicker (A-K). Il board è asciutto, punta per farti pagare.", advice: "Quando hai la coppia migliore con il kicker migliore, punta per farti pagare da mani peggiori." },
             { id: 5, action: 'CALL', name: "OESD (Bilaterale)", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto.", advice: "I progetti di scala bilaterali sono molto forti. Se il prezzo è giusto, chiama sempre." },
             { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi.", advice: "Con il 'Full' hai quasi vinto. Fai finta di essere debole per indurre l'avversario a puntare." },
             { id: 7, action: 'FOLD', name: "Coppia Media vs Overcards", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto.", advice: "Se hai una coppia media e scendono carte alte (A, K, Q), spesso sei battuto. Risparmia chips." },
-            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai floppato Trips. Inizia a costruire il piatto subito.", advice: "I 'Trips' (tre carte uguali con una del board) sono fortissimi. Gioca aggressivo." },
-            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold.", advice: "Usa le carte spaventose sul tavolo (Assi, carte di colore) per bluffare quando l'avversario mostra debolezza." },
+            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai un Tris grazie alla coppia sul tavolo. Inizia a costruire il piatto subito.", advice: "I 'Trips' (tre carte uguali con una del board) sono fortissimi. Gioca aggressivo." },
+            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold degli altri", advice: "Usa le carte spaventose sul tavolo (Assi, carte di colore) per bluffare quando l'avversario mostra debolezza." },
             { id: 10, action: 'RAISE', name: "Two Pair", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano.", advice: "La doppia coppia è forte ma vulnerabile. Punta per non regalare carte gratis." },
-            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Villain va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
+            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Il tuo avversario va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
             { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
             { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Top Pair ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
+            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Coppia Top ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
             { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
         ];
 
