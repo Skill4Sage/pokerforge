@@ -163,7 +163,7 @@
             
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
-            const [timeLeft, setTimeLeft] = useState(100);
+            const [timeLeft, setTimeLeft] = useState(250);
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
@@ -308,7 +308,7 @@
                 }
                 setSession({ total: num, current: 0, correct: 0, mode: pendingMode, streak: 0, xpBonus: bonus, errors: [] });
                 setCurrentHand(firstHand);
-                setTimeLeft(100);
+                setTimeLeft(250);
                 setView('training');
             };
 
@@ -559,7 +559,7 @@
                             <div className="bg-white w-full max-w-md rounded-t-[3rem] p-10 shadow-2xl text-gray-900 text-center safe-pb">
                                 <div className="text-7xl mb-6">{feedback.icon}</div><h3 className="text-3xl font-black mb-4 italic uppercase tracking-tighter leading-none">{feedback.title}</h3>
                                 <div className="bg-blue-50 p-6 rounded-3xl mb-10 border border-blue-100 italic font-medium text-gray-700 text-sm leading-snug" dangerouslySetInnerHTML={{ __html: feedback.text }}></div>
-                                <button onClick={() => feedback.isFinal ? finishSession() : (setFeedback(null), setCurrentHand(generateHand(session.mode)), setTimeLeft(100))} className="action-btn w-full py-6 bg-gray-900 text-white rounded-3xl font-black text-xl italic uppercase tracking-widest shadow-xl">{feedback.isFinal ? 'Vedi Risultati' : 'Prossima Mano'}</button>
+                                <button onClick={() => feedback.isFinal ? finishSession() : (setFeedback(null), setCurrentHand(generateHand(session.mode)), setTimeLeft(250))} className="action-btn w-full py-6 bg-gray-900 text-white rounded-3xl font-black text-xl italic uppercase tracking-widest shadow-xl">{feedback.isFinal ? 'Vedi Risultati' : 'Prossima Mano'}</button>
                             </div>
                         </div>
                     )}
