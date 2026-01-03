@@ -128,8 +128,7 @@
             FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
         };
 
-        // --- DATABASE RANGES GTO (AGGIORNATO E CORRETTO) ---
-        // Ora include range più ampi per BTN/SB e gestisce i 10 (T)
+        // --- DATABASE RANGES GTO ---
         const OPEN_RAISE_RANGES = {
             'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'], perc: 15 },
             'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'], perc: 18 },
@@ -151,27 +150,74 @@
             'SB vs BB 3-B': { fourBet: ['AA','KK','QQ','AKs','AKo','A5s','A4s'], call: ['JJ','TT','99','88','77','AQs','AJs','ATs','KQs','KJs'] }
         };
 
+        // Aggiornato con Nomi più Chiari per i Principianti
         const POST_FLOP_ARCHETYPES = [
-            { id: 1, action: 'RAISE', name: "Set", lesson: "Tu hai un Tris. Estrai valore subito contro l'Avversario", advice: "Con i 'Tris' (tre carte uguali) devi essere aggressivo per proteggerti dai progetti e costruire un piatto grosso." },
-            { id: 2, action: 'CALL', name: "Nut Flush Draw", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "I progetti di colore massimi (all'Asso) si giocano quasi sempre in Call o Raise, mai Fold." },
-            { id: 3, action: 'FOLD', name: "Overpair vs Straight", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa.", advice: "Non innamorarti di due Assi (AA) se il board diventa pericoloso e connesso. Disciplina!" },
-            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai Top Pair Top Kicker (A-K). Il board è asciutto, punta per farti pagare.", advice: "Quando hai la coppia migliore con il kicker migliore, punta per farti pagare da mani peggiori." },
-            { id: 5, action: 'CALL', name: "OESD (Bilaterale)", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto.", advice: "I progetti di scala bilaterali sono molto forti. Se il prezzo è giusto, chiama sempre." },
-            { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi.", advice: "Con il 'Full' hai quasi vinto. Fai finta di essere debole per indurre l'avversario a puntare." },
-            { id: 7, action: 'FOLD', name: "Coppia Media vs Overcards", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto.", advice: "Se hai una coppia media e scendono carte alte (A, K, Q), spesso sei battuto. Risparmia chips." },
-            { id: 8, action: 'RAISE', name: "Trips", lesson: "Hai un Tris grazie alla coppia sul tavolo. Inizia a costruire il piatto subito.", advice: "I 'Trips' (tre carte uguali con una del board) sono fortissimi. Gioca aggressivo." },
-            { id: 9, action: 'RAISE', name: "Bluff GTO (Scary Board)", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold degli altri", advice: "Usa le carte spaventose sul tavolo (Assi, carte di colore) per bluffare quando l'avversario mostra debolezza." },
-            { id: 10, action: 'RAISE', name: "Two Pair", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano.", advice: "La doppia coppia è forte ma vulnerabile. Punta per non regalare carte gratis." },
-            { id: 11, action: 'FOLD', name: "Bluff Catcher fallito", lesson: "Il tuo avversario va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia, spesso è meglio passare." },
-            { id: 12, action: 'RAISE', name: "Scala completata", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai chiuso la scala! Punta forte per massimizzare il profitto." },
-            { id: 13, action: 'CALL', name: "Gutshot + Overcards", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "A volte anche progetti marginali come l'incastro valgono una chiamata se hai carte alte in mano." },
-            { id: 14, action: 'CALL', name: "Top Pair River", lesson: "Hai Coppia Top ma il River chiude molti progetti. Chiama solo.", advice: "Se al River la tua Top Pair diventa marginale perché si chiudono colori o scale, chiama solo (non rilanciare)." },
-            { id: 15, action: 'FOLD', name: "Monotone Board", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se il tavolo è tutto di un colore (es. tutto cuori) e tu non ne hai, scappa! Qualcuno avrà quasi certamente il colore." }
+            { id: 1, action: 'RAISE', name: "Set (Tris in Mano)", lesson: "Tu hai un Tris. Estrai valore subito contro l'Avversario", advice: "Con i 'Set' (coppia in mano che lega con una carta a terra) sei molto forte ma vulnerabile ai progetti di scala o colore. Punta per proteggere la mano e ingrandire il piatto." },
+            { id: 2, action: 'CALL', name: "Progetto Colore Max", lesson: "Hai il Nut Flush Draw. Le quote ti permettono di chiamare e vedere il Turn.", advice: "Quando hai il progetto di colore massimo (Nut Flush Draw), hai molte probabilità di vincere se esce la tua carta. Chiama la puntata, ma non foldare mai." },
+            { id: 3, action: 'FOLD', name: "Coppia Alta vs Scala", lesson: "Hai una Overpair (Assi) ma il board è letale per le scale. Passa.", advice: "Anche se hai due Assi (AA), se il tavolo è molto connesso (es. 7-8-9) e l'avversario mostra forza, è probabile che abbia chiuso scala. Impara a foldare le coppie alte." },
+            { id: 4, action: 'RAISE', name: "Top Pair Top Kicker", lesson: "Hai Top Pair Top Kicker (A-K). Il board è asciutto, punta per farti pagare.", advice: "Hai la coppia più alta possibile con il miglior accompagnatore (Kicker). È una mano da valore: punta per farti chiamare da mani peggiori." },
+            { id: 5, action: 'CALL', name: "Scala Bilaterale", lesson: "Hai progetto di scala bilaterale. Il prezzo dell'Avversario è onesto.", advice: "Con una scala bilaterale (8 carte utili per chiudere il punto), hai ottime probabilità. Se la puntata non è eccessiva, chiama sempre per vedere il Turn." },
+            { id: 6, action: 'CALL', name: "Full House", lesson: "Hai floppato Full. Slowplay GTO: lascia che l'Avversario bluffi.", advice: "Il Full è un punto fortissimo e difficile da battere. Qui puoi fare 'Slowplay': chiama solo o fai check per invogliare l'avversario a puntare di più in seguito." },
+            { id: 7, action: 'FOLD', name: "Coppia Media vs Alte", lesson: "Hai Jack ma il board ha tre carte superiori. Sei battuto.", advice: "Se hai una coppia media (es. JJ) ma a terra ci sono A, K, Q, la tua mano vale poco. Risparmia le chips e passa." },
+            { id: 8, action: 'RAISE', name: "Trips (Tris con Terra)", lesson: "Hai un Tris grazie alla coppia sul tavolo. Inizia a costruire il piatto subito.", advice: "I 'Trips' si fanno con una tua carta e una coppia a terra. Spesso l'avversario non ti crederà. Gioca aggressivo." },
+            { id: 9, action: 'RAISE', name: "Bluff su Board Pericoloso", lesson: "Non hai nulla, ma il board è spaventoso. Forza il fold degli altri", advice: "Se escono carte 'spaventose' (es. un Asso o la terza carta a colore) e l'avversario fa check, puoi puntare in Bluff fingendo di avere il punto forte." },
+            { id: 10, action: 'RAISE', name: "Doppia Coppia", lesson: "Hai doppia coppia. Board coordinato, proteggi la mano.", advice: "La doppia coppia è forte ma se esce un'altra carta alta o connessa il tuo valore crolla. Punta subito per non regalare carte gratis." },
+            { id: 11, action: 'FOLD', name: "Bluff Catcher Fallito", lesson: "Il tuo avversario va All-in al River. Sei battuto quasi sempre. Passa.", advice: "Al River, se l'avversario va All-in e tu hai solo una coppia media, la maggior parte delle volte sei battuto. Non fare l'eroe: Fold." },
+            { id: 12, action: 'RAISE', name: "Scala Chiusa", lesson: "Hai scala. Vai per il massimo valore.", advice: "Hai il punto (Scala)! Ora l'obiettivo non è cacciare l'avversario, ma farsi dare più chips possibili. Rilancia!" },
+            { id: 13, action: 'CALL', name: "Incastro + Carte Alte", lesson: "Incastro di scala e overcards. Chiamata tecnica corretta.", advice: "Un incastro (Gutshot) da solo è debole, ma se hai anche due carte alte in mano (Overcards), hai abbastanza 'uscite' (Outs) per giustificare una chiamata." },
+            { id: 14, action: 'CALL', name: "Top Pair Debole al River", lesson: "Hai Coppia Top ma il River chiude molti progetti. Chiama solo.", advice: "Se al River esce una carta che potrebbe aver regalato scala o colore all'avversario, la tua Top Pair perde valore. Chiama solo per vedere le carte (Bluff Catching)." },
+            { id: 15, action: 'FOLD', name: "Board Monocolore", lesson: "Board tutto di un seme e tu non lo hai. Ogni bet è un Fold.", advice: "Se ci sono 3 o 4 carte dello stesso seme a terra e tu non hai quel seme, la probabilità che l'avversario abbia colore è altissima. Folda senza rimpianti." }
         ];
 
         const CARD_VALUES = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
         const SUITS = ['♠', '♥', '♦', '♣'];
         const POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB'];
+
+        const Card = ({ v, s, small=false }) => {
+            const isRed = s === '♥' || s === '♦';
+            const sizeClass = small ? 'w-12 h-16 sm:w-14 sm:h-20 p-0.5 border' : 'w-20 h-28 sm:w-24 sm:h-36 p-2 sm:p-3 border-2';
+            const fontSizeLg = small ? 'text-lg' : 'text-3xl sm:text-4xl';
+            const fontSizeSm = small ? 'text-[10px]' : 'text-sm sm:text-base';
+            return (
+                <div className={`${sizeClass} bg-white rounded-lg sm:rounded-xl shadow-md flex flex-col items-center justify-between border-gray-200 text-gray-900 select-none`}>
+                    <div className={`w-full flex justify-start ${fontSizeSm} font-bold ${isRed?'text-red-600':''}`}>{v==='T'?'10':v}</div>
+                    <div className={`${fontSizeLg} ${isRed?'text-red-600':''}`}>{s}</div>
+                    <div className={`w-full flex justify-end ${fontSizeSm} font-bold rotate-180 ${isRed?'text-red-600':''}`}>{v==='T'?'10':v}</div>
+                </div>
+            );
+        };
+
+        const RangeGrid = ({ rangeData, simpleList = null, color = 'emerald' }) => {
+            const gridCells = useMemo(() => {
+                const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+                const cells = [];
+                let activeClass, borderClass, shadowClass;
+                if (color === 'orange') {
+                    activeClass = 'bg-orange-500 text-white'; borderClass = 'border-orange-400'; shadowClass = 'shadow-[0_0_8px_rgba(249,115,22,0.5)]';
+                } else if (color === 'blue') {
+                    activeClass = 'bg-blue-600 text-white'; borderClass = 'border-blue-500'; shadowClass = 'shadow-[0_0_8px_rgba(37,99,235,0.5)]';
+                } else {
+                    activeClass = 'bg-emerald-500 text-white'; borderClass = 'border-emerald-400'; shadowClass = 'shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                }
+                for (let i = 0; i < 13; i++) {
+                    for (let j = 0; j < 13; j++) {
+                        const isPair = i === j, isSuited = i < j;
+                        let hand = ranks[Math.min(i,j)] + ranks[Math.max(i,j)] + (isPair ? '' : (isSuited ? 's' : 'o'));
+                        let statusClass = 'bg-gray-900 text-gray-700 border-gray-800';
+                        if (simpleList) {
+                            if (simpleList.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
+                        } else {
+                            if (isPair) { if(rangeData.pairs.includes(hand)) statusClass = `${activeClass} ${borderClass} ${shadowClass} z-10`; }
+                            else if (isSuited) { if(rangeData.suited.includes(hand)) statusClass = `${activeClass} ${borderClass}`; }
+                            else { if(rangeData.offsuit.includes(hand)) statusClass = `${activeClass} ${borderClass}`; }
+                        }
+                        cells.push(<div key={`${i}-${j}`} className={`range-cell border ${statusClass}`}>{ranks[i]}{ranks[j]}{i < j ? 's' : (i > j ? 'o' : '')}</div>);
+                    }
+                }
+                return cells;
+            }, [rangeData, simpleList, color]);
+            return <div className="range-grid">{gridCells}</div>;
+        };
 
         const App = () => {
             const [view, setView] = useState('start');
@@ -180,38 +226,22 @@
             const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('poker_history')) || []);
             const [failedHands, setFailedHands] = useState(() => JSON.parse(localStorage.getItem('poker_fails')) || []);
             const [logoError, setLogoError] = useState(false);
-            
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
             const [timeLeft, setTimeLeft] = useState(250);
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
-            // --- FUNZIONE DI ANALISI AVANZATA PRE-FLOP ---
             const analyzeHandType = (v1, v2, isSuited, isPair, pos) => {
                 const handName = isPair ? `${v1}${v2}` : `${v1}${v2}${isSuited ? 's' : 'o'}`;
-                
-                if (['AA','KK','QQ','JJ','AKs','AKo'].includes(handName)) 
-                    return { type: "Mani Premium", advice: `Le mani Premium come ${handName} si rilanciano sempre per valore, da qualsiasi posizione.` };
-                
+                if (['AA','KK','QQ','JJ','AKs','AKo'].includes(handName)) return { type: "Mani Premium", advice: `Le mani Premium come ${handName} si rilanciano sempre per valore, da qualsiasi posizione.` };
                 if (isPair) {
-                    if (['TT','99','88'].includes(handName)) 
-                        return { type: "Coppie Medie", advice: `Le coppie medie (${handName}) sono buone ma vulnerabili. Rilancia, ma fai attenzione alle overcards al flop.` };
-                    // Correzione logica coppie basse
-                    if (pos === 'UTG' || pos === 'MP') 
-                        return { type: "Coppie Basse (Early)", advice: `Da ${pos}, le coppie basse come ${handName} sono rischiose. Spesso è meglio passarle se il tavolo è aggressivo.` };
+                    if (['TT','99','88'].includes(handName)) return { type: "Coppie Medie", advice: `Le coppie medie (${handName}) sono buone ma vulnerabili. Rilancia, ma fai attenzione alle overcards al flop.` };
+                    if (pos === 'UTG' || pos === 'MP') return { type: "Coppie Basse (Early)", advice: `Da ${pos}, le coppie basse come ${handName} sono rischiose. Spesso è meglio passarle se il tavolo è aggressivo.` };
                     return { type: "Coppie Basse (Late)", advice: `Da ${pos}, le coppie basse (${handName}) guadagnano valore per il 'Set Mining' o per rubare i bui.` };
                 }
-                
-                // Gestione carte deboli/marginali
-                if (['72','83','94','T5','J6','Q7','K8'].some(bad => handName.includes(bad)))
-                    return { type: "Junk (Spazzatura)", advice: `Questa è una mano spazzatura. Non giocarla mai, nemmeno se sei annoiato!` };
-
-                if (isSuited) {
-                    if (v1 === 'A') return { type: "Assi Suited", advice: `Gli Assi Suited (${handName}) sono ottimi per progetti di colore nut. Giocali aggressivamente da posizioni finali.` };
-                }
-
-                // Default
+                if (['72','83','94','T5','J6','Q7','K8'].some(bad => handName.includes(bad))) return { type: "Junk (Spazzatura)", advice: `Questa è una mano spazzatura. Non giocarla mai, nemmeno se sei annoiato!` };
+                if (isSuited && v1 === 'A') return { type: "Assi Suited", advice: `Gli Assi Suited (${handName}) sono ottimi per progetti di colore nut. Giocali aggressivamente da posizioni finali.` };
                 return { type: "Mani Marginali", advice: `Questa mano (${handName}) è marginale da ${pos}. Verifica rigorosamente la tabella per non perdere chips inutilmente.` };
             };
 
@@ -220,7 +250,6 @@
                 const s = [...SUITS].sort(() => 0.5 - Math.random());
                 const r = [...CARD_VALUES].sort(() => 0.5 - Math.random());
                 let v1, v2, s1, s2, board;
-
                 switch(arche.id) {
                     case 1: v1=v2=r[0]; s1=s[0]; s2=s[1]; board=[[r[0],s[2]],[r[4],s[3]],[r[8],s[0]]]; break;
                     case 2: v1='A'; v2=r[4]; s1=s2=s[0]; board=[[r[1],s[0]],[r[2],s[0]],[r[8],s[1]]]; break;
@@ -239,7 +268,8 @@
                     case 15: v1='A'; v2='K'; s1=s[0]; s2=s[1]; board=[['7',s[2]],['4',s[2]],['2',s[2]]]; break;
                     default: v1=r[0]; v2=r[1]; s1=s[0]; s2=s[1]; board=[[r[4],s[2]],[r[6],s[3]],[r[9],s[0]]];
                 }
-                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.lesson, category: arche.name, advice: arche.advice, isPostFlop: true, mode: 'postflop', archetypeId: arche.id };
+                // FIX CRITICO: lesson mappa su arche.advice invece di arche.lesson
+                return { v1, v2, s1, s2, board, scenario: arche.lesson, correct: arche.action, lesson: arche.advice, category: arche.name, advice: arche.advice, isPostFlop: true, mode: 'postflop', archetypeId: arche.id };
             };
 
             const generateHand = (mode, type = 'random') => {
@@ -247,123 +277,59 @@
                     const fail = failedHands[Math.floor(Math.random() * failedHands.length)];
                     if (fail && fail.isPostFlop) return generatePostFlop();
                 }
-                
                 if (mode === 'postflop') return generatePostFlop();
-
                 let heroPos, villainPos, scenarioKey;
-                if (mode === 'open') {
-                    heroPos = POSITIONS.filter(p => p !== 'BB')[Math.floor(Math.random() * 5)];
-                } else if (mode === 'defense') {
-                    const keys = Object.keys(VS_RAISE_DATA);
-                    scenarioKey = keys[Math.floor(Math.random() * keys.length)];
-                    [heroPos, , villainPos] = scenarioKey.split(' ');
-                } else {
-                    const keys = Object.keys(VS_3BET_DATA);
-                    scenarioKey = keys[Math.floor(Math.random() * keys.length)];
-                    [heroPos, , villainPos] = scenarioKey.split(' ');
-                }
-
-                const isPair = Math.random() < 0.2;
-                const isSuited = !isPair && Math.random() < 0.35;
-                let r1 = CARD_VALUES[Math.floor(Math.random() * 12)];
-                let r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
+                if (mode === 'open') { heroPos = POSITIONS.filter(p => p !== 'BB')[Math.floor(Math.random() * 5)]; }
+                else if (mode === 'defense') { const keys = Object.keys(VS_RAISE_DATA); scenarioKey = keys[Math.floor(Math.random() * keys.length)]; [heroPos, , villainPos] = scenarioKey.split(' '); }
+                else { const keys = Object.keys(VS_3BET_DATA); scenarioKey = keys[Math.floor(Math.random() * keys.length)]; [heroPos, , villainPos] = scenarioKey.split(' '); }
+                const isPair = Math.random() < 0.2, isSuited = !isPair && Math.random() < 0.35;
+                let r1 = CARD_VALUES[Math.floor(Math.random() * 12)], r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 if (isPair) r2 = r1; else if (r1 === r2) r2 = CARD_VALUES[(CARD_VALUES.indexOf(r1) + 1) % 12];
-
-                const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
-                const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
-                
-                // Normalizzazione per lookup (es. 10 -> T)
-                const sV1 = v1 === '10' ? 'T' : v1;
-                const sV2 = v2 === '10' ? 'T' : v2;
-                const handShort = (sV1+sV2);
-                
+                const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2, v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
+                const handShort = (v1 === '10' ? 'T' : v1) + (v2 === '10' ? 'T' : v2);
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
-
                 if (mode === 'open') {
                     const range = OPEN_RAISE_RANGES[heroPos];
-                    // Controllo specifico per coppie basse in range estesi (es. CO/BTN)
-                    if (isPair) {
-                         if (range.pairs.includes(handShort)) correctAction = 'RAISE';
-                    } else if (isSuited) {
-                         if (range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    } else {
-                         if (range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    }
+                    if (isPair) { if (range.pairs.includes(handShort)) correctAction = 'RAISE'; }
+                    else if (isSuited) { if (range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE'; }
+                    else { if (range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE'; }
                 } else if (mode === 'defense') {
-                    const range = VS_RAISE_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    const range = VS_RAISE_DATA[scenarioKey], full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
                     if (range.threeBet.some(h => h === full || h === handShort)) correctAction = '3-BET';
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 } else {
-                    const range = VS_3BET_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    const range = VS_3BET_DATA[scenarioKey], full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
                     if (range.fourBet.some(h => h === full || h === handShort)) correctAction = '4-BET';
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 }
-
                 const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair, heroPos);
-
-                return { 
-                    heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], 
-                    correctAction, mode, 
-                    category: handAnalysis.type, 
-                    advice: handAnalysis.advice,
-                    lesson: mode === 'open' ? `${handAnalysis.advice}` : 
-                            mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
-                            `Vs 3-Bet: ${handAnalysis.advice}`,
-                    scenarioKey,
-                    isPostFlop: false
-                };
+                return { heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], correctAction, mode, category: handAnalysis.type, advice: handAnalysis.advice, lesson: mode === 'open' ? `${handAnalysis.advice}` : mode === 'defense' ? `Difesa: ${handAnalysis.advice}` : `Vs 3-Bet: ${handAnalysis.advice}`, scenarioKey, isPostFlop: false };
             };
 
             const initSession = (num, type = 'random') => {
                 const bonus = { 'open': 1.0, 'defense': 1.2, 'vs3bet': 1.4, 'postflop': 1.5 }[pendingMode] * (type === 'weak' ? 1.5 : 1.0);
-                let firstHand;
-                try {
-                    firstHand = generateHand(pendingMode, type);
-                } catch (e) {
-                    firstHand = generateHand(pendingMode, 'random');
-                }
+                let firstHand; try { firstHand = generateHand(pendingMode, type); } catch (e) { firstHand = generateHand(pendingMode, 'random'); }
                 setSession({ total: num, current: 0, correct: 0, mode: pendingMode, streak: 0, xpBonus: bonus, errors: [] });
-                setCurrentHand(firstHand);
-                setTimeLeft(250);
-                setView('training');
+                setCurrentHand(firstHand); setTimeLeft(250); setView('training');
             };
 
             const handleAction = (choice) => {
-                if (feedback) return;
-                clearInterval(timerRef.current);
-                const norm = (currentHand.mode === 'postflop') ? choice : 
-                             (choice === 'RAISE' && currentHand.mode === 'vs3bet') ? '4-BET' :
-                             (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
+                if (feedback) return; clearInterval(timerRef.current);
+                const norm = (currentHand.mode === 'postflop') ? choice : (choice === 'RAISE' && currentHand.mode === 'vs3bet') ? '4-BET' : (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
                 const ok = norm === (currentHand.correct || currentHand.correctAction);
                 const final = session.current + 1 >= session.total;
-                
-                if (ok) {
-                    setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 }));
-                } else {
-                    const errorMsg = currentHand.category; // Usa category per raggruppamento
-                    setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, errorMsg] }));
-                    const failData = { mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey, archetypeId: currentHand.archetypeId };
-                    const newFails = [failData, ...failedHands].slice(0, 50);
-                    setFailedHands(newFails);
-                    localStorage.setItem('poker_fails', JSON.stringify(newFails));
-                }
+                if (ok) { setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 })); }
+                else { if (navigator.vibrate) navigator.vibrate(200); setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, currentHand.category] })); const newFails = [{ mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey, archetypeId: currentHand.archetypeId }, ...failedHands].slice(0, 50); setFailedHands(newFails); localStorage.setItem('poker_fails', JSON.stringify(newFails)); }
                 setFeedback({ icon: ok ? "✅" : "❌", title: ok ? "FORGIATO" : "ERRORE", text: currentHand.lesson || `La mossa corretta era <b>${currentHand.correctAction || currentHand.correct}</b>.`, isFinal: final });
             };
 
             const finishSession = () => {
-                const acc = Math.round((session.correct / session.total) * 100);
-                const xp = Math.round(session.correct * 25 * session.xpBonus);
-                localStorage.setItem('poker_xp', totalXP + xp);
-                setTotalXP(totalXP + xp);
-                const data = { date: new Date().toISOString(), hands: session.total, acc, mode: session.mode };
-                const newHistory = [data, ...history].slice(0, 50);
-                setHistory(newHistory);
-                localStorage.setItem('poker_history', JSON.stringify(newHistory));
-                setFeedback(null);
-                setView('summary');
+                const acc = Math.round((session.correct / session.total) * 100), xp = Math.round(session.correct * 25 * session.xpBonus);
+                setTotalXP(totalXP + xp); localStorage.setItem('poker_xp', totalXP + xp);
+                const newHistory = [{ date: new Date().toISOString(), hands: session.total, acc, mode: session.mode }, ...history].slice(0, 10);
+                setHistory(newHistory); localStorage.setItem('poker_history', JSON.stringify(newHistory));
+                setFeedback(null); setView('summary');
             };
 
             useEffect(() => {
@@ -374,130 +340,23 @@
                 return () => clearInterval(timerRef.current);
             }, [view, feedback, currentHand]);
 
-            const Card = ({ v, s, small=false }) => {
-                const isRed = s === '♥' || s === '♦';
-                return (
-                    <div className={`${small?'w-14 h-20 p-1 border-2':'w-24 h-36 p-4 border-4'} bg-white rounded-2xl shadow-2xl flex flex-col items-center justify-between border-gray-100 text-gray-900 select-none`}>
-                        <div className={`${small?'text-[10px]':'text-2xl'} font-black ${isRed?'text-red-600':''}`}>{v==='T'?'10':v}</div>
-                        <div className={`${small?'text-2xl':'text-5xl'} ${isRed?'text-red-600':''}`}>{s}</div>
-                        <div className={`${small?'text-[10px]':'text-2xl'} font-black rotate-180 ${isRed?'text-red-600':''}`}>{v==='T'?'10':v}</div>
-                    </div>
-                );
-            };
-
             const MainLogo = () => (
-                <div className="relative w-40 h-40 sm:w-60 sm:h-60 group">
+                <div className="relative w-40 h-40 sm:w-60 sm:h-60 group flex-none">
                     <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
                     <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden flex items-center justify-center">
-                        {!logoError ? (
-                            <img src="logo.png" alt="Logo" className="w-full h-full object-contain" onError={() => setLogoError(true)} />
-                        ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6">
-                                <Icons.Zap />
-                                <span className="text-[10px] font-black uppercase mt-2">logo.png mancante</span>
-                            </div>
-                        )}
+                        {!logoError ? ( <img src="logo.png" alt="Logo" className="w-full h-full object-contain" onError={() => setLogoError(true)} /> ) 
+                        : ( <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6"><Icons.Zap /><span className="text-[10px] font-black uppercase mt-2">logo.png mancante</span></div> )}
                     </div>
                 </div>
             );
 
-            const RangeGrid = ({ rangeData, simpleList = null, color = 'emerald' }) => {
-                const gridCells = useMemo(() => {
-                    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-                    const cells = [];
-                    
-                    // Color configuration
-                    let activeClass, borderClass, shadowClass;
-                    if (color === 'orange') {
-                        activeClass = 'bg-orange-500 text-white';
-                        borderClass = 'border-orange-400';
-                        shadowClass = 'shadow-[0_0_8px_rgba(249,115,22,0.5)]';
-                    } else if (color === 'blue') {
-                        activeClass = 'bg-blue-600 text-white';
-                        borderClass = 'border-blue-500';
-                        shadowClass = 'shadow-[0_0_8px_rgba(37,99,235,0.5)]';
-                    } else {
-                        activeClass = 'bg-emerald-500 text-white';
-                        borderClass = 'border-emerald-400';
-                        shadowClass = 'shadow-[0_0_8px_rgba(16,185,129,0.5)]';
-                    }
-
-                    // Helper to check if hand is in range
-                    const checkHand = (h) => {
-                        // Logic for Simple List (Defense)
-                        if (simpleList) {
-                            return simpleList.includes(h) ? `${activeClass} ${borderClass}` : 'bg-gray-900 text-gray-700 border-gray-800';
-                        }
-
-                        // Logic for Range Object (Attack)
-                        if (rangeData.pairs.includes(h)) return `${activeClass} ${borderClass}`;
-                        if (rangeData.suited.some(sh => sh.startsWith(h))) return `${activeClass} ${borderClass}`;
-                        if (rangeData.offsuit.some(oh => oh.startsWith(h))) return `${activeClass} ${borderClass}`;
-                        
-                        // Partial matches
-                        const pairMatch = rangeData.pairs.find(p => p.length === 2 && ranks.indexOf(p[0]) >= ranks.indexOf(h[0]));
-                        if (h[0] === h[1] && pairMatch && ranks.indexOf(h[0]) <= ranks.indexOf(pairMatch[0])) return `${activeClass} ${borderClass}`;
-
-                        return 'bg-gray-900 text-gray-600 border-gray-800 opacity-40';
-                    };
-
-                    for (let i = 0; i < 13; i++) {
-                        for (let j = 0; j < 13; j++) {
-                            let hand = '';
-                            let type = '';
-                            
-                            if (i === j) {
-                                hand = ranks[i] + ranks[j];
-                                type = 'pair';
-                            } else if (i < j) {
-                                hand = ranks[i] + ranks[j] + 's';
-                                type = 'suited';
-                            } else {
-                                hand = ranks[j] + ranks[i] + 'o';
-                                type = 'offsuit';
-                            }
-                            
-                            let statusClass = 'bg-gray-900 text-gray-700 border-gray-800';
-                            
-                            // Check logic simplified for brevity but functional
-                            if (simpleList) {
-                                if (simpleList.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
-                            } else {
-                                // Reuse existing range logic structure
-                                const isPair = i === j;
-                                const isSuited = i < j;
-                                if (isPair) {
-                                    if(rangeData.pairs.includes(hand)) statusClass = `${activeClass} ${borderClass} ${shadowClass} z-10`;
-                                } else if (isSuited) {
-                                    if(rangeData.suited.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
-                                } else {
-                                    if(rangeData.offsuit.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
-                                }
-                            }
-
-                            cells.push(
-                                <div key={`${i}-${j}`} className={`range-cell border ${statusClass}`}>
-                                    {ranks[i]}{ranks[j]}{i < j ? 's' : (i > j ? 'o' : '')}
-                                </div>
-                            );
-                        }
-                    }
-                    return cells;
-                }, [rangeData, simpleList, color]);
-
-                return <div className="range-grid">{gridCells}</div>;
-            };
-
-            // --- VISTE ---
             if (view === 'start') return (
-                <div className="flex flex-col items-center justify-center px-6 pb-6 text-center select-none w-full max-w-md mx-auto h-full safe-pt safe-pb overflow-y-auto">
-                    {/* Barra Superiore: Tutorial e Tabelle */}
-                    <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50">
+                <div className="flex flex-col items-center px-6 pb-6 text-center select-none w-full max-w-md mx-auto h-full safe-pt safe-pb overflow-y-auto">
+                    <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50 pt-10">
                         <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
                             <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div>
                             <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tutorial</span>
                         </button>
-                        {/* Archivio in alto a destra */}
                         <button onClick={() => setView('history')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
                             <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.History /></div>
                             <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Archivio</span>
@@ -507,48 +366,47 @@
                             <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tabelle</span>
                         </button>
                     </div>
-
-                    <MainLogo />
-                    <div className="mb-4 mt-2"><h1 className="text-5xl sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
-                    
-                    <div className="w-full space-y-2 pb-4">
-                        <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('defense'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white">Difesa</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('vs3bet'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-orange-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight">
-                            <div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white">Vs 3-Bet</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-4 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl">
-                            <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
-                        </button>
+                    <div className="mt-28 flex flex-col items-center w-full">
+                        <MainLogo />
+                        <div className="mb-4 mt-2 flex-none"><h1 className="text-5xl sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
+                        <div className="w-full space-y-2 flex-none pb-8">
+                            <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
+                                <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight />
+                            </button>
+                            <button onClick={() => { setPendingMode('defense'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
+                                <div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white">Difesa</span></div><Icons.ChevronRight />
+                            </button>
+                            <button onClick={() => { setPendingMode('vs3bet'); setView('select-duration'); }} className="action-btn w-full py-3.5 bg-gray-800 border-2 border-orange-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
+                                <div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white">Vs 3-Bet</span></div><Icons.ChevronRight />
+                            </button>
+                            <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-4 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl hover:scale-[1.02]">
+                                <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
+                            </button>
+                        </div>
                     </div>
                 </div>
             );
 
-            // --- VISTA TABELLE ---
             if (view === 'tables') return (
                 <div className="tables-overlay text-white select-none">
                     <header className="flex-none border-b border-gray-800 px-6 safe-pt pb-4 shadow-sm z-10 flex justify-between items-center bg-gray-900">
                         <h2 className="text-2xl font-black italic uppercase tracking-tighter">Tabelle GTO</h2>
-                        <button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400"><Icons.X /></button>
+                        <button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400 active:bg-gray-700"><Icons.X /></button>
                     </header>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar scroll-content safe-pb">
-                        <div className="space-y-4">
-                            <h3 className="text-orange-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-content safe-pb">
+                        <div className="space-y-6">
+                            <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>
                             {Object.entries(OPEN_RAISE_RANGES).map(([pos, data]) => (
-                                <div key={pos} className="bg-gray-800 p-4 rounded-2xl border border-gray-700">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-black text-xl">{pos}</span>
-                                        <span className="text-xs bg-green-900 text-green-400 px-2 py-1 rounded font-mono font-bold">RANGE {pos}</span>
+                                <div key={pos} className="bg-gray-900 p-4 rounded-3xl border border-gray-800 shadow-xl">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="font-black text-2xl tracking-tight text-white">{pos}</span>
+                                        <span className="text-xs bg-emerald-900/50 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full font-mono font-bold">{data.perc}% RANGE</span>
                                     </div>
                                     <RangeGrid rangeData={data} color="emerald" />
                                 </div>
                             ))}
                         </div>
-                        <div className="space-y-4 pt-4">
+                        <div className="space-y-8 pt-4">
                             <h3 className="text-blue-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">Difesa vs Raise</h3>
                             {Object.entries(VS_RAISE_DATA).slice(0,3).map(([scenario, data]) => (
                                 <div key={scenario} className="bg-gray-800/50 p-4 rounded-3xl border border-gray-700 space-y-4">
@@ -586,10 +444,10 @@
                             <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
                         </div>
                     </header>
-                    <main className="archive-content scroll-content px-6 pt-6 pb-24 hide-scrollbar bg-gray-50 space-y-8 safe-pb">
+                    <main className="archive-content scroll-content px-6 pt-6 pb-24 space-y-10 safe-pb">
                         <section>
                             <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3">Filosofia della Fucina</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco d'azzardo, ma una palestra per la tua mente. L'obiettivo non è vincere ogni mano (impossibile!), ma prendere la decisione matematicamente corretta (GTO) ogni singola volta. La vittoria è solo una conseguenza della disciplina a lungo termine.</p>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco d'azzardo, ma una palestra per la tua mente. L'obiettivo non è vincere ogni mano, ma prendere la decisione matematicamente corretta (GTO) ogni volta.</p>
                         </section>
 
                         <section className="bg-orange-50 p-5 rounded-2xl border border-orange-100">
@@ -598,29 +456,32 @@
                                 Dov'è il "Check"?
                             </h3>
                             <div className="text-sm text-gray-700 leading-relaxed font-medium space-y-3">
-                                <p>Noterai che non esiste il tasto <b>Check</b>. Ecco perché:</p>
+                                <p>Non esiste il tasto <b>Check</b>. Ecco perché:</p>
                                 <ul className="list-disc pl-4 space-y-2">
-                                    <li><b>Pre-Flop:</b> Se tocchi a te parlare per primo o se fronteggi una puntata, il Check non è permesso o è strategicamente sconsigliato (Limp). Devi aggredire o pagare.</li>
-                                    <li><b>Post-Flop:</b> Per rendere l'allenamento fluido, le azioni sono semplificate. Usa <b>Raise</b> per puntare/aggredire e <b>Call</b> per azioni passive (sia che tu debba chiamare una puntata, sia per fare Check-Back/Controllo).</li>
+                                    <li><b>Pre-Flop:</b> Se tocchi a te parlare o se fronteggi una puntata, il Check non è permesso o è sconsigliato. Devi aggredire o pagare.</li>
+                                    <li><b>Post-Flop:</b> Azioni semplificate. Usa <b>Raise</b> per aggredire e <b>Call</b> per azioni passive (Chiamare o fare Check-Back).</li>
                                 </ul>
                             </div>
                         </section>
 
                         <section>
                             <h3 className="text-lg font-black text-green-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Swords /> <span className="ml-2">Attacco (RFI)</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">RFI sta per "Raise First In". In questa modalità sei il primo a parlare. Devi decidere se la tua mano è abbastanza forte per rilanciare (Raise) o se devi passare (Fold). La posizione al tavolo è fondamentale!</p>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Imparare quali mani aprire quando sei il primo a parlare.</p>
                         </section>
+
                         <section>
                             <h3 className="text-lg font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Shield /> <span className="ml-2">Difesa vs Raise</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">Qui impari come reagire quando un avversario apre il gioco prima di te. Dovrai decidere se fare Fold, Call (vedere) o 3-Bet (rilanciare a tua volta).</p>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Reagire correttamente a un'apertura avversaria.</p>
                         </section>
+
                         <section>
                             <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Zap /> <span className="ml-2">Vs 3-Bet</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">La situazione più difficile: hai aperto il gioco e qualcuno ti ha rilanciato contro. Impara a difendere il tuo range o a foldare le mani dominate.</p>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Difendere il tuo rilancio da una contro-aggressione.</p>
                         </section>
+
                         <section>
                             <h3 className="text-lg font-black text-red-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Layout /> <span className="ml-2">Post-Flop</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">L'allenamento cruciale per smettere di perdere soldi. Imparerai a leggere la "texture" del board (le carte comuni) e a capire quando la tua mano ha perso valore o quando estrarre il massimo profitto.</p>
+                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Leggere il board e non perdere chips inutilmente.</p>
                         </section>
                     </main>
                 </div>
@@ -657,11 +518,15 @@
             if (view === 'training' && currentHand) return (
                 <div className="fixed inset-0 bg-gray-100 flex flex-col text-gray-900 overflow-hidden z-[50]">
                     <div className="bg-white border-b-2 p-5 flex justify-between items-center safe-pt">
-                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic uppercase leading-none mb-1 uppercase">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
+                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest leading-none mb-1">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
                         <div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div>
                     </div>
-                    <div className="w-full h-2 bg-gray-200"><div className="h-full bg-orange-500 transition-all duration-100" style={{ width: `${timeLeft}%` }}></div></div>
-                    <main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content safe-pb">
+                    {/* Timer Bar with Color Transition */}
+                    <div className="w-full h-2 bg-gray-200">
+                        <div className={`h-full transition-all duration-100 ${timeLeft < 80 ? 'bg-red-500' : timeLeft < 150 ? 'bg-yellow-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, (timeLeft/250)*100)}%` }}></div>
+                    </div>
+                    
+                    <main className="flex-1 p-4 flex flex-col items-center space-y-3 overflow-y-auto scroll-content safe-pb">
                         <div className="w-full max-w-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-6 py-4 shadow-xl text-center border-2 border-blue-500">
                             <div className="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1">
                             {currentHand.isPostFlop ? 'Situazione' : 'La Tua Posizione'}
@@ -676,20 +541,21 @@
                                 <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-gray-200 text-xs font-bold text-center italic shadow-sm leading-snug w-full">{currentHand.scenario}</div>
                             </div>
                         )}
-                        <div className="w-full bg-emerald-900 rounded-[4rem] p-10 shadow-2xl flex flex-col items-center border-8 border-emerald-800/50">
-                            <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic uppercase font-black">Tu (Hero)</p>
-                            <div className="flex space-x-6 scale-110"><Card v={currentHand.v1} s={currentHand.s1} /><Card v={currentHand.v2} s={currentHand.s2} /></div>
+                        <div className="w-full bg-emerald-900 rounded-[3rem] p-6 shadow-2xl flex flex-col items-center border-8 border-emerald-800/50 relative overflow-hidden">
+                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/felt.png')] opacity-30"></div>
+                            <p className="relative z-10 text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic">Tu (Hero)</p>
+                            <div className="relative z-10 flex space-x-6 scale-110"><Card v={currentHand.v1} s={currentHand.s1} /><Card v={currentHand.v2} s={currentHand.s2} /></div>
                         </div>
                         <div className="grid grid-cols-3 gap-3 w-full mt-auto safe-pb">
-                            <button onClick={() => handleAction('RAISE')} className="action-btn py-5 bg-orange-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-orange-800">{session.mode==='vs3bet'?'4-Bet':(currentHand.mode==='postflop'?'Rilancia':'Raise')}</button>
-                            <button onClick={() => handleAction('CALL')} className="action-btn py-5 bg-blue-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-blue-800">Chiama</button>
-                            <button onClick={() => handleAction('FOLD')} className="action-btn py-5 bg-white text-red-600 rounded-2xl font-black shadow-xl uppercase italic text-lg border-2 border-red-600">Passa</button>
+                            <button onClick={() => handleAction('RAISE')} className="action-btn py-5 bg-orange-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">{session.mode==='vs3bet'?'4-Bet':(currentHand.mode==='postflop'?'Rilancia':'Raise')}</button>
+                            <button onClick={() => handleAction('CALL')} className="action-btn py-5 bg-blue-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">Chiama</button>
+                            <button onClick={() => handleAction('FOLD')} className="action-btn py-5 bg-white text-red-600 rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-gray-300 active:border-b-0 active:translate-y-1">Passa</button>
                         </div>
                     </main>
                     {feedback && (
                         <div className="fixed inset-0 bg-black/80 flex items-end justify-center z-[500] p-4 backdrop-blur-md">
-                            <div className="bg-white w-full max-w-md rounded-t-[3rem] p-10 shadow-2xl text-gray-900 text-center safe-pb">
-                                <div className="text-7xl mb-6">{feedback.icon}</div><h3 className="text-3xl font-black mb-4 italic uppercase tracking-tighter leading-none">{feedback.title}</h3>
+                            <div className="bg-white w-full max-w-md rounded-t-[3rem] p-10 shadow-2xl text-gray-900 text-center safe-pb animate-in slide-in-from-bottom-10 fade-in duration-300">
+                                <div className="text-7xl mb-6 animate-bounce">{feedback.icon}</div><h3 className="text-3xl font-black mb-4 italic uppercase tracking-tighter leading-none">{feedback.title}</h3>
                                 <div className="bg-blue-50 p-6 rounded-3xl mb-10 border border-blue-100 italic font-medium text-gray-700 text-sm leading-snug" dangerouslySetInnerHTML={{ __html: feedback.text }}></div>
                                 <button onClick={() => feedback.isFinal ? finishSession() : (setFeedback(null), setCurrentHand(generateHand(session.mode)), setTimeLeft(250))} className="action-btn w-full py-6 bg-gray-900 text-white rounded-3xl font-black text-xl italic uppercase tracking-widest shadow-xl">{feedback.isFinal ? 'Vedi Risultati' : 'Prossima Mano'}</button>
                             </div>
@@ -703,12 +569,13 @@
                 const mainAdvice = Object.entries(counts).sort((a,b) => b[1]-a[1])[0]?.[0];
                 return (
                     <div className="fixed inset-0 bg-white flex flex-col p-10 items-center justify-center text-center text-gray-900 select-none z-[110]">
-                        <h2 className="text-5xl font-black mb-2 italic uppercase tracking-tighter leading-none text-gray-900 uppercase">Sessione Finita</h2><p className="text-xl text-blue-600 font-bold mb-8 tracking-tight font-mono uppercase italic text-center">Precisione: {Math.round((session.correct/session.total)*100)}%</p>
+                        <h2 className="text-5xl font-black mb-2 italic uppercase tracking-tighter leading-none uppercase">Sessione Finita</h2><p className="text-xl text-blue-600 font-bold mb-8 tracking-tight font-mono uppercase italic text-center">Precisione: {Math.round((session.correct/session.total)*100)}%</p>
                         <div className="w-full max-w-xs bg-gray-50 p-10 rounded-[4rem] border border-gray-100 mb-8 shadow-inner mx-auto text-5xl font-black">+{Math.round(session.correct*25*session.xpBonus)} XP</div>
                         {mainAdvice && (
                             <div className="mb-12 bg-orange-50 p-6 rounded-3xl border border-orange-100 italic font-medium text-gray-600 text-sm leading-tight text-left">
                                 <span className="text-orange-600 font-black uppercase text-[10px] block mb-2 tracking-widest">Consiglio della Fucina</span>
-                                In questa sessione hai faticato maggiormente con: <b className="text-gray-900">{mainAdvice}</b>.
+                                In questa sessione hai faticato con: <b className="text-gray-900">{mainAdvice}</b>.
+                                <p className="mt-2 text-xs text-gray-500 font-normal">Consulta il tutorial o le tabelle per approfondire questa situazione specifica.</p>
                             </div>
                         )}
                         <button onClick={() => setView('start')} className="action-btn w-full max-w-xs py-6 bg-gray-900 text-white rounded-3xl font-black text-lg shadow-xl uppercase italic tracking-widest">Menu Principale</button>
@@ -720,11 +587,11 @@
                 <div className="archive-overlay select-none text-gray-900">
                     <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Archivio</h2>
+                            <h2 className="text-2xl font-black italic tracking-tighter uppercase font-black text-gray-900 text-2xl uppercase">Archivio</h2>
                             <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
                         </div>
                     </header>
-                    <main className="archive-content scroll-content px-5 pt-6 pb-24 hide-scrollbar bg-gray-50 safe-pb">
+                    <main className="archive-content scroll-content px-5 pt-6 pb-24">
                         {history.length > 0 ? history.map((s, i) => (
                             <div key={i} className="bg-white p-5 mb-3 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100">
                                 <div className="text-left flex flex-col">
