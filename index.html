@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    
     <title>PokerForge - GTO Coach</title>
     <!-- React & Babel via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -43,13 +48,6 @@
         }
         .animate-glow { animation: pulse-glow 4s infinite ease-in-out; }
 
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
         .archive-overlay, .tables-overlay {
             height: 100dvh;
             width: 100%;
@@ -71,7 +69,6 @@
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* Grid Range Styles */
         .range-grid {
             display: grid;
             grid-template-columns: repeat(13, 1fr);
@@ -86,7 +83,6 @@
             border-radius: 1px;
             font-weight: 700;
         }
-        /* Mobile adjustment for grid text */
         @media (max-width: 380px) {
             .range-grid { font-size: 6px; }
         }
@@ -98,7 +94,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- ICONS ---
         const Icons = {
             History: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
             X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
@@ -114,7 +109,6 @@
             FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
         };
 
-        // --- GAME DATA ---
         const OPEN_RAISE_RANGES = {
             'UTG': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66'], suited: ['AK','AQ','AJ','AT','A9s','KQs','KJs','QJs','JTs'], offsuit: ['AK','AQ'], perc: 15 },
             'MP': { pairs: ['AA','KK','QQ','JJ','TT','99','88','77','66','55'], suited: ['AK','AQ','AJ','AT','A9s','A8s','KQs','KJs','KTs','QJs','QTs','JTs','T9s'], offsuit: ['AK','AQ','AJ'], perc: 18 },
@@ -158,14 +152,11 @@
         const SUITS = ['♠', '♥', '♦', '♣'];
         const POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB'];
 
-        // --- COMPONENTS ---
-
         const Card = ({ v, s, small=false }) => {
             const isRed = s === '♥' || s === '♦';
             const sizeClass = small ? 'w-12 h-16 sm:w-14 sm:h-20 p-0.5 border' : 'w-20 h-28 sm:w-24 sm:h-36 p-2 sm:p-3 border-2';
             const fontSizeLg = small ? 'text-lg' : 'text-3xl sm:text-4xl';
             const fontSizeSm = small ? 'text-[10px]' : 'text-sm sm:text-base';
-            
             return (
                 <div className={`${sizeClass} bg-white rounded-lg sm:rounded-xl shadow-md flex flex-col items-center justify-between border-gray-200 text-gray-900 select-none`}>
                     <div className={`w-full flex justify-start ${fontSizeSm} font-bold ${isRed?'text-red-600':''}`}>{v==='T'?'10':v}</div>
@@ -179,86 +170,31 @@
             const gridCells = useMemo(() => {
                 const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
                 const cells = [];
-                
-                // Color configuration
                 let activeClass, borderClass, shadowClass;
                 if (color === 'orange') {
-                    activeClass = 'bg-orange-500 text-white';
-                    borderClass = 'border-orange-400';
-                    shadowClass = 'shadow-[0_0_8px_rgba(249,115,22,0.5)]';
+                    activeClass = 'bg-orange-500 text-white'; borderClass = 'border-orange-400'; shadowClass = 'shadow-[0_0_8px_rgba(249,115,22,0.5)]';
                 } else if (color === 'blue') {
-                    activeClass = 'bg-blue-600 text-white';
-                    borderClass = 'border-blue-500';
-                    shadowClass = 'shadow-[0_0_8px_rgba(37,99,235,0.5)]';
+                    activeClass = 'bg-blue-600 text-white'; borderClass = 'border-blue-500'; shadowClass = 'shadow-[0_0_8px_rgba(37,99,235,0.5)]';
                 } else {
-                    activeClass = 'bg-emerald-500 text-white';
-                    borderClass = 'border-emerald-400';
-                    shadowClass = 'shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                    activeClass = 'bg-emerald-500 text-white'; borderClass = 'border-emerald-400'; shadowClass = 'shadow-[0_0_8px_rgba(16,185,129,0.5)]';
                 }
-
-                // Helper to check if hand is in range
-                const checkHand = (h) => {
-                    // Logic for Simple List (Defense)
-                    if (simpleList) {
-                        return simpleList.includes(h) ? `${activeClass} ${borderClass}` : 'bg-gray-900 text-gray-700 border-gray-800';
-                    }
-
-                    // Logic for Range Object (Attack)
-                    if (rangeData.pairs.includes(h)) return `${activeClass} ${borderClass}`;
-                    if (rangeData.suited.some(sh => sh.startsWith(h))) return `${activeClass} ${borderClass}`;
-                    if (rangeData.offsuit.some(oh => oh.startsWith(h))) return `${activeClass} ${borderClass}`;
-                    
-                    // Partial matches
-                    const pairMatch = rangeData.pairs.find(p => p.length === 2 && ranks.indexOf(p[0]) >= ranks.indexOf(h[0]));
-                    if (h[0] === h[1] && pairMatch && ranks.indexOf(h[0]) <= ranks.indexOf(pairMatch[0])) return `${activeClass} ${borderClass}`;
-
-                    return 'bg-gray-900 text-gray-600 border-gray-800 opacity-40';
-                };
-
                 for (let i = 0; i < 13; i++) {
                     for (let j = 0; j < 13; j++) {
-                        let hand = '';
-                        let type = '';
-                        
-                        if (i === j) {
-                            hand = ranks[i] + ranks[j];
-                            type = 'pair';
-                        } else if (i < j) {
-                            hand = ranks[i] + ranks[j] + 's';
-                            type = 'suited';
-                        } else {
-                            hand = ranks[j] + ranks[i] + 'o';
-                            type = 'offsuit';
-                        }
-                        
+                        const isPair = i === j, isSuited = i < j;
+                        let hand = ranks[Math.min(i,j)] + ranks[Math.max(i,j)] + (isPair ? '' : (isSuited ? 's' : 'o'));
                         let statusClass = 'bg-gray-900 text-gray-700 border-gray-800';
-                        
-                        // Check logic simplified for brevity but functional
                         if (simpleList) {
                             if (simpleList.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
                         } else {
-                            // Reuse existing range logic structure
-                            const isPair = i === j;
-                            const isSuited = i < j;
-                            if (isPair) {
-                                if(rangeData.pairs.includes(hand)) statusClass = `${activeClass} ${borderClass} ${shadowClass} z-10`;
-                            } else if (isSuited) {
-                                if(rangeData.suited.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
-                            } else {
-                                if(rangeData.offsuit.includes(hand)) statusClass = `${activeClass} ${borderClass}`;
-                            }
+                            if (isPair) { if(rangeData.pairs.includes(hand)) statusClass = `${activeClass} ${borderClass} ${shadowClass} z-10`; }
+                            else if (isSuited) { if(rangeData.suited.includes(hand)) statusClass = `${activeClass} ${borderClass}`; }
+                            else { if(rangeData.offsuit.includes(hand)) statusClass = `${activeClass} ${borderClass}`; }
                         }
-
-                        cells.push(
-                            <div key={`${i}-${j}`} className={`range-cell border ${statusClass}`}>
-                                {ranks[i]}{ranks[j]}{i < j ? 's' : (i > j ? 'o' : '')}
-                            </div>
-                        );
+                        cells.push(<div key={`${i}-${j}`} className={`range-cell border ${statusClass}`}>{ranks[i]}{ranks[j]}{i < j ? 's' : (i > j ? 'o' : '')}</div>);
                     }
                 }
                 return cells;
             }, [rangeData, simpleList, color]);
-
             return <div className="range-grid">{gridCells}</div>;
         };
 
@@ -269,36 +205,22 @@
             const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('poker_history')) || []);
             const [failedHands, setFailedHands] = useState(() => JSON.parse(localStorage.getItem('poker_fails')) || []);
             const [logoError, setLogoError] = useState(false);
-            
             const [session, setSession] = useState({ total: 30, current: 0, correct: 0, mode: 'open', streak: 0, xpBonus: 1.0, errors: [] });
             const [currentHand, setCurrentHand] = useState(null);
             const [timeLeft, setTimeLeft] = useState(250);
             const [feedback, setFeedback] = useState(null);
             const timerRef = useRef(null);
 
-            // --- FUNZIONE DI ANALISI AVANZATA PRE-FLOP ---
             const analyzeHandType = (v1, v2, isSuited, isPair, pos) => {
                 const handName = isPair ? `${v1}${v2}` : `${v1}${v2}${isSuited ? 's' : 'o'}`;
-                
-                if (['AA','KK','QQ','JJ','AKs','AKo'].includes(handName)) 
-                    return { type: "Mani Premium", advice: `Le mani Premium come ${handName} si rilanciano sempre per valore, da qualsiasi posizione.` };
-                
+                if (['AA','KK','QQ','JJ','AKs','AKo'].includes(handName)) return { type: "Mani Premium", advice: `Le mani Premium come ${handName} si rilanciano sempre per valore, da qualsiasi posizione.` };
                 if (isPair) {
-                    if (['TT','99','88'].includes(handName)) 
-                        return { type: "Coppie Medie", advice: `Le coppie medie (${handName}) sono buone ma vulnerabili. Rilancia, ma fai attenzione alle overcards al flop.` };
-                    
-                    if (pos === 'UTG' || pos === 'MP') 
-                        return { type: "Coppie Basse (Early)", advice: `Da ${pos}, le coppie basse come ${handName} sono rischiose. Spesso è meglio passarle se il tavolo è aggressivo.` };
+                    if (['TT','99','88'].includes(handName)) return { type: "Coppie Medie", advice: `Le coppie medie (${handName}) sono buone ma vulnerabili. Rilancia, ma fai attenzione alle overcards al flop.` };
+                    if (pos === 'UTG' || pos === 'MP') return { type: "Coppie Basse (Early)", advice: `Da ${pos}, le coppie basse come ${handName} sono rischiose. Spesso è meglio passarle se il tavolo è aggressivo.` };
                     return { type: "Coppie Basse (Late)", advice: `Da ${pos}, le coppie basse (${handName}) guadagnano valore per il 'Set Mining' o per rubare i bui.` };
                 }
-                
-                if (['72','83','94','T5','J6','Q7','K8'].some(bad => handName.includes(bad)))
-                    return { type: "Junk (Spazzatura)", advice: `Questa è una mano spazzatura. Non giocarla mai, nemmeno se sei annoiato!` };
-
-                if (isSuited) {
-                    if (v1 === 'A') return { type: "Assi Suited", advice: `Gli Assi Suited (${handName}) sono ottimi per progetti di colore nut. Giocali aggressivamente da posizioni finali.` };
-                }
-
+                if (['72','83','94','T5','J6','Q7','K8'].some(bad => handName.includes(bad))) return { type: "Junk (Spazzatura)", advice: `Questa è una mano spazzatura. Non giocarla mai, nemmeno se sei annoiato!` };
+                if (isSuited && v1 === 'A') return { type: "Assi Suited", advice: `Gli Assi Suited (${handName}) sono ottimi per progetti di colore nut. Giocali aggressivamente da posizioni finali.` };
                 return { type: "Mani Marginali", advice: `Questa mano (${handName}) è marginale da ${pos}. Verifica rigorosamente la tabella per non perdere chips inutilmente.` };
             };
 
@@ -307,9 +229,6 @@
                 const s = [...SUITS].sort(() => 0.5 - Math.random());
                 const r = [...CARD_VALUES].sort(() => 0.5 - Math.random());
                 let v1, v2, s1, s2, board;
-
-                // Scenario construction logic remains same for brevity, 
-                // typically you would expand this for more variety
                 switch(arche.id) {
                     case 1: v1=v2=r[0]; s1=s[0]; s2=s[1]; board=[[r[0],s[2]],[r[4],s[3]],[r[8],s[0]]]; break;
                     case 2: v1='A'; v2=r[4]; s1=s2=s[0]; board=[[r[1],s[0]],[r[2],s[0]],[r[8],s[1]]]; break;
@@ -336,124 +255,59 @@
                     const fail = failedHands[Math.floor(Math.random() * failedHands.length)];
                     if (fail && fail.isPostFlop) return generatePostFlop();
                 }
-                
                 if (mode === 'postflop') return generatePostFlop();
-
                 let heroPos, villainPos, scenarioKey;
-                if (mode === 'open') {
-                    heroPos = POSITIONS.filter(p => p !== 'BB')[Math.floor(Math.random() * 5)];
-                } else if (mode === 'defense') {
-                    const keys = Object.keys(VS_RAISE_DATA);
-                    scenarioKey = keys[Math.floor(Math.random() * keys.length)];
-                    [heroPos, , villainPos] = scenarioKey.split(' ');
-                } else {
-                    const keys = Object.keys(VS_3BET_DATA);
-                    scenarioKey = keys[Math.floor(Math.random() * keys.length)];
-                    [heroPos, , villainPos] = scenarioKey.split(' ');
-                }
-
-                const isPair = Math.random() < 0.2;
-                const isSuited = !isPair && Math.random() < 0.35;
-                let r1 = CARD_VALUES[Math.floor(Math.random() * 12)];
-                let r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
+                if (mode === 'open') { heroPos = POSITIONS.filter(p => p !== 'BB')[Math.floor(Math.random() * 5)]; }
+                else if (mode === 'defense') { const keys = Object.keys(VS_RAISE_DATA); scenarioKey = keys[Math.floor(Math.random() * keys.length)]; [heroPos, , villainPos] = scenarioKey.split(' '); }
+                else { const keys = Object.keys(VS_3BET_DATA); scenarioKey = keys[Math.floor(Math.random() * keys.length)]; [heroPos, , villainPos] = scenarioKey.split(' '); }
+                const isPair = Math.random() < 0.2, isSuited = !isPair && Math.random() < 0.35;
+                let r1 = CARD_VALUES[Math.floor(Math.random() * 12)], r2 = CARD_VALUES[Math.floor(Math.random() * 12)];
                 if (isPair) r2 = r1; else if (r1 === r2) r2 = CARD_VALUES[(CARD_VALUES.indexOf(r1) + 1) % 12];
-
-                const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2;
-                const v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
-                
-                const sV1 = v1 === '10' ? 'T' : v1;
-                const sV2 = v2 === '10' ? 'T' : v2;
-                const handShort = (sV1+sV2);
-                
+                const v1 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r1 : r2, v2 = CARD_VALUES.indexOf(r1) <= CARD_VALUES.indexOf(r2) ? r2 : r1;
+                const handShort = (v1 === '10' ? 'T' : v1) + (v2 === '10' ? 'T' : v2);
                 const suits = [...SUITS].sort(() => 0.5 - Math.random());
                 let correctAction = 'FOLD';
-
                 if (mode === 'open') {
                     const range = OPEN_RAISE_RANGES[heroPos];
-                    if (isPair) {
-                         if (range.pairs.includes(handShort)) correctAction = 'RAISE';
-                    } else if (isSuited) {
-                         if (range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    } else {
-                         if (range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE';
-                    }
+                    if (isPair) { if (range.pairs.includes(handShort)) correctAction = 'RAISE'; }
+                    else if (isSuited) { if (range.suited.some(h => h.startsWith(handShort))) correctAction = 'RAISE'; }
+                    else { if (range.offsuit.some(h => h.startsWith(handShort))) correctAction = 'RAISE'; }
                 } else if (mode === 'defense') {
-                    const range = VS_RAISE_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    const range = VS_RAISE_DATA[scenarioKey], full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
                     if (range.threeBet.some(h => h === full || h === handShort)) correctAction = '3-BET';
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 } else {
-                    const range = VS_3BET_DATA[scenarioKey];
-                    const full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
+                    const range = VS_3BET_DATA[scenarioKey], full = isPair ? handShort : handShort + (isSuited ? 's' : 'o');
                     if (range.fourBet.some(h => h === full || h === handShort)) correctAction = '4-BET';
                     else if (range.call.some(h => h === full || h === handShort)) correctAction = 'CALL';
                 }
-
                 const handAnalysis = analyzeHandType(v1, v2, isSuited, isPair, heroPos);
-
-                return { 
-                    heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], 
-                    correctAction, mode, 
-                    category: handAnalysis.type, 
-                    advice: handAnalysis.advice,
-                    lesson: mode === 'open' ? `${handAnalysis.advice}` : 
-                            mode === 'defense' ? `Difesa: ${handAnalysis.advice}` :
-                            `Vs 3-Bet: ${handAnalysis.advice}`,
-                    scenarioKey,
-                    isPostFlop: false
-                };
+                return { heroPos, villainPos, v1, v2, s1: suits[0], s2: isSuited ? suits[0] : suits[1], correctAction, mode, category: handAnalysis.type, advice: handAnalysis.advice, lesson: mode === 'open' ? `${handAnalysis.advice}` : mode === 'defense' ? `Difesa: ${handAnalysis.advice}` : `Vs 3-Bet: ${handAnalysis.advice}`, scenarioKey, isPostFlop: false };
             };
 
             const initSession = (num, type = 'random') => {
                 const bonus = { 'open': 1.0, 'defense': 1.2, 'vs3bet': 1.4, 'postflop': 1.5 }[pendingMode] * (type === 'weak' ? 1.5 : 1.0);
-                let firstHand;
-                try {
-                    firstHand = generateHand(pendingMode, type);
-                } catch (e) {
-                    firstHand = generateHand(pendingMode, 'random');
-                }
+                let firstHand; try { firstHand = generateHand(pendingMode, type); } catch (e) { firstHand = generateHand(pendingMode, 'random'); }
                 setSession({ total: num, current: 0, correct: 0, mode: pendingMode, streak: 0, xpBonus: bonus, errors: [] });
-                setCurrentHand(firstHand);
-                setTimeLeft(250);
-                setView('training');
+                setCurrentHand(firstHand); setTimeLeft(250); setView('training');
             };
 
             const handleAction = (choice) => {
-                if (feedback) return;
-                clearInterval(timerRef.current);
-                const norm = (currentHand.mode === 'postflop') ? choice : 
-                             (choice === 'RAISE' && currentHand.mode === 'vs3bet') ? '4-BET' :
-                             (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
+                if (feedback) return; clearInterval(timerRef.current);
+                const norm = (currentHand.mode === 'postflop') ? choice : (choice === 'RAISE' && currentHand.mode === 'vs3bet') ? '4-BET' : (choice === 'RAISE' && currentHand.mode === 'defense') ? '3-BET' : choice;
                 const ok = norm === (currentHand.correct || currentHand.correctAction);
                 const final = session.current + 1 >= session.total;
-                
-                if (ok) {
-                    setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 }));
-                } else {
-                    // Feedback Haptic (vibration)
-                    if (navigator.vibrate) navigator.vibrate(200);
-                    
-                    const errorMsg = currentHand.category; 
-                    setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, errorMsg] }));
-                    const failData = { mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey, archetypeId: currentHand.archetypeId };
-                    const newFails = [failData, ...failedHands].slice(0, 50);
-                    setFailedHands(newFails);
-                    localStorage.setItem('poker_fails', JSON.stringify(newFails));
-                }
+                if (ok) { setSession(s => ({ ...s, correct: s.correct + 1, current: s.current + 1, streak: s.streak + 1 })); }
+                else { if (navigator.vibrate) navigator.vibrate(200); setSession(s => ({ ...s, current: s.current + 1, streak: 0, errors: [...s.errors, currentHand.category] })); const newFails = [{ mode: currentHand.mode, isPostFlop: currentHand.isPostFlop || false, heroPos: currentHand.heroPos, scenarioKey: currentHand.scenarioKey, archetypeId: currentHand.archetypeId }, ...failedHands].slice(0, 50); setFailedHands(newFails); localStorage.setItem('poker_fails', JSON.stringify(newFails)); }
                 setFeedback({ icon: ok ? "✅" : "❌", title: ok ? "FORGIATO" : "ERRORE", text: currentHand.lesson || `La mossa corretta era <b>${currentHand.correctAction || currentHand.correct}</b>.`, isFinal: final });
             };
 
             const finishSession = () => {
-                const acc = Math.round((session.correct / session.total) * 100);
-                const xp = Math.round(session.correct * 25 * session.xpBonus);
-                localStorage.setItem('poker_xp', totalXP + xp);
-                setTotalXP(totalXP + xp);
-                const data = { date: new Date().toISOString(), hands: session.total, acc, mode: session.mode };
-                const newHistory = [data, ...history].slice(0, 50);
-                setHistory(newHistory);
-                localStorage.setItem('poker_history', JSON.stringify(newHistory));
-                setFeedback(null);
-                setView('summary');
+                const acc = Math.round((session.correct / session.total) * 100), xp = Math.round(session.correct * 25 * session.xpBonus);
+                setTotalXP(totalXP + xp); localStorage.setItem('poker_xp', totalXP + xp);
+                const newHistory = [{ date: new Date().toISOString(), hands: session.total, acc, mode: session.mode }, ...history].slice(0, 50);
+                setHistory(newHistory); localStorage.setItem('poker_history', JSON.stringify(newHistory));
+                setFeedback(null); setView('summary');
             };
 
             useEffect(() => {
@@ -464,288 +318,87 @@
                 return () => clearInterval(timerRef.current);
             }, [view, feedback, currentHand]);
 
-            // --- MAIN RENDER LOGIC ---
-            
-            // Re-introdotto il componente Logo che gestisce l'immagine
             const MainLogo = () => (
-                <div className="relative w-56 h-56 sm:w-80 sm:h-80 group mb-6 mt-4">
+                <div className="relative w-56 h-56 sm:w-80 sm:h-80 group mb-6 flex-none">
                     <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-[60px] animate-glow"></div>
                     <div className="relative z-10 w-full h-full rounded-[4rem] overflow-hidden flex items-center justify-center">
-                        {!logoError ? (
-                            <img src="logo.png" alt="Logo" className="w-full h-full object-contain" onError={() => setLogoError(true)} />
-                        ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6">
-                                <Icons.Zap />
-                                <span className="text-[10px] font-black uppercase mt-2">logo.png mancante</span>
-                            </div>
-                        )}
+                        {!logoError ? ( <img src="logo.png" alt="Logo" className="w-full h-full object-contain" onError={() => setLogoError(true)} /> ) 
+                        : ( <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 border-4 border-gray-800 rounded-[3.5rem] text-orange-500/30 p-6"><Icons.Zap /><span className="text-[10px] font-black uppercase mt-2">logo.png mancante</span></div> )}
                     </div>
                 </div>
             );
 
             if (view === 'start') return (
-                <div className="flex flex-col items-center justify-start px-6 pt-24 pb-24 text-center select-none w-full max-w-md mx-auto h-full safe-pt safe-pb overflow-y-auto">
-                    <div className="absolute top-0 left-0 w-full flex justify-between px-6 safe-pt z-50">
-                        <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
-                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div>
-                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tutorial</span>
-                        </button>
-                        <button onClick={() => setView('history')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
-                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.History /></div>
-                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Archivio</span>
-                        </button>
-                        <button onClick={() => setView('tables')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
-                            <div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.FileText /></div>
-                            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tabelle</span>
-                        </button>
+                <div className="flex flex-col items-center px-6 pb-32 text-center select-none w-full max-w-md mx-auto h-full overflow-y-auto pt-28">
+                    <div className="absolute top-0 left-0 w-full flex justify-between px-6 pt-10 z-50">
+                        <button onClick={() => setView('tutorial')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity"><div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.BookOpen /></div><span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tutorial</span></button>
+                        <button onClick={() => setView('history')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity"><div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.History /></div><span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Archivio</span></button>
+                        <button onClick={() => setView('tables')} className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity"><div className="p-2 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl shadow-lg"><Icons.FileText /></div><span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-widest">Tabelle</span></button>
                     </div>
-
                     <MainLogo />
-                    
-                    <div className="mb-8 mt-[-10px]"><h1 className="text-[11vw] sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
-                    
-                    <div className="w-full space-y-3 pb-8">
-                        <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
-                            <div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('defense'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
-                            <div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white">Difesa</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('vs3bet'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-orange-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750">
-                            <div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white">Vs 3-Bet</span></div><Icons.ChevronRight />
-                        </button>
-                        <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-6 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl hover:scale-[1.02]">
-                            <div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout />
-                        </button>
+                    <div className="mb-8 mt-[-10px] flex-none"><h1 className="text-[11vw] sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">PokerForge</h1><p className="text-orange-500 font-bold text-[10px] uppercase tracking-[0.4em] italic mt-2">Elite GTO Coaching</p></div>
+                    <div className="w-full space-y-3 flex-none">
+                        <button onClick={() => { setPendingMode('open'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-green-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750"><div className='flex items-center text-green-400'><Icons.Swords /> <span className="ml-4 text-white">Attacco</span></div><Icons.ChevronRight /></button>
+                        <button onClick={() => { setPendingMode('defense'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-blue-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750"><div className='flex items-center text-blue-400'><Icons.Shield /> <span className="ml-4 text-white">Difesa</span></div><Icons.ChevronRight /></button>
+                        <button onClick={() => { setPendingMode('vs3bet'); setView('select-duration'); }} className="action-btn w-full py-5 bg-gray-800 border-2 border-orange-500 text-white rounded-2xl font-black flex justify-between px-6 items-center shadow-lg uppercase tracking-tight hover:bg-gray-750"><div className='flex items-center text-orange-400'><Icons.Zap /> <span className="ml-4 text-white">Vs 3-Bet</span></div><Icons.ChevronRight /></button>
+                        <button onClick={() => { setPendingMode('postflop'); setView('select-duration'); }} className="action-btn w-full py-6 bg-gradient-to-br from-red-600 to-orange-700 text-white rounded-3xl font-black flex justify-between px-6 items-center shadow-xl hover:scale-[1.02]"><div className='flex flex-col items-start'><span>POST-FLOP</span><span className='text-[8px] opacity-70 italic font-medium uppercase'>Smettila di perdere Chips</span></div><Icons.Layout /></button>
                     </div>
                 </div>
             );
 
             if (view === 'tables') return (
                 <div className="tables-overlay text-white select-none">
-                    <header className="flex-none border-b border-gray-800 px-6 safe-pt pb-4 shadow-sm z-10 flex justify-between items-center bg-gray-900">
-                        <h2 className="text-2xl font-black italic uppercase tracking-tighter">Tabelle GTO</h2>
-                        <button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400 active:bg-gray-700"><Icons.X /></button>
-                    </header>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-8 hide-scrollbar scroll-content safe-pb">
-                        <div className="space-y-6">
-                            <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>
-                            {Object.entries(OPEN_RAISE_RANGES).map(([pos, data]) => (
-                                <div key={pos} className="bg-gray-900 p-4 rounded-3xl border border-gray-800 shadow-xl">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className="font-black text-2xl tracking-tight text-white">{pos}</span>
-                                        <span className="text-xs bg-emerald-900/50 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full font-mono font-bold">{data.perc}% RANGE</span>
-                                    </div>
-                                    <RangeGrid rangeData={data} color="emerald" />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="space-y-8 pt-4">
-                            <h3 className="text-blue-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">Difesa vs Raise</h3>
-                            {Object.entries(VS_RAISE_DATA).slice(0,3).map(([scenario, data]) => (
-                                <div key={scenario} className="bg-gray-800/50 p-4 rounded-3xl border border-gray-700 space-y-4">
-                                    <div className="font-black text-lg text-white border-b border-gray-700 pb-2 mb-2">{scenario}</div>
-                                    
-                                    {/* Griglia 3-Bet (Arancione) */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-xs font-black text-orange-500 uppercase tracking-wider">Rilancia (3-Bet)</span>
-                                            <span className="text-[10px] bg-orange-900/30 text-orange-300 px-2 py-0.5 rounded border border-orange-800/50">Aggressione</span>
-                                        </div>
-                                        <RangeGrid simpleList={data.threeBet} color="orange" />
-                                    </div>
-
-                                    {/* Griglia Call (Blu) */}
-                                    <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-xs font-black text-blue-500 uppercase tracking-wider">Chiama (Call)</span>
-                                            <span className="text-[10px] bg-blue-900/30 text-blue-300 px-2 py-0.5 rounded border border-blue-800/50">Difesa Passiva</span>
-                                        </div>
-                                        <RangeGrid simpleList={data.call} color="blue" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    <header className="flex-none border-b border-gray-800 px-6 safe-pt pb-4 shadow-sm z-10 flex justify-between items-center bg-gray-900"><h2 className="text-2xl font-black italic uppercase tracking-tighter">Tabelle GTO</h2><button onClick={() => setView('start')} className="p-2 bg-gray-800 rounded-full text-gray-400 active:bg-gray-700"><Icons.X /></button></header>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-content safe-pb">
+                        <div className="space-y-6"><h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">RFI (Attacco)</h3>{Object.entries(OPEN_RAISE_RANGES).map(([pos, data]) => (<div key={pos} className="bg-gray-900 p-4 rounded-3xl border border-gray-800 shadow-xl"><div className="flex justify-between items-center mb-4"><span className="font-black text-2xl tracking-tight text-white">{pos}</span><span className="text-xs bg-emerald-900/50 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full font-mono font-bold">{data.perc}% RANGE</span></div><RangeGrid rangeData={data} color="emerald" /></div>))}</div>
+                        <div className="space-y-8 pt-4"><h3 className="text-blue-500 font-black uppercase tracking-widest text-sm border-b border-gray-800 pb-2">Difesa vs Raise</h3>{Object.entries(VS_RAISE_DATA).slice(0,3).map(([scenario, data]) => (<div key={scenario} className="bg-gray-800/50 p-4 rounded-3xl border border-gray-700 space-y-4"><div className="font-black text-lg text-white border-b border-gray-700 pb-2 mb-2">{scenario}</div><div><div className="flex justify-between items-center mb-2"><span className="text-xs font-black text-orange-500 uppercase tracking-wider">Rilancia (3-Bet)</span><span className="text-[10px] bg-orange-900/30 text-orange-300 px-2 py-0.5 rounded border border-orange-800/50">Aggressione</span></div><RangeGrid simpleList={data.threeBet} color="orange" /></div><div><div className="flex justify-between items-center mb-2"><span className="text-xs font-black text-blue-500 uppercase tracking-wider">Chiama (Call)</span><span className="text-[10px] bg-blue-900/30 text-blue-300 px-2 py-0.5 rounded border border-blue-800/50">Difesa Passiva</span></div><RangeGrid simpleList={data.call} color="blue" /></div></div>))}</div>
                     </div>
                 </div>
             );
 
             if (view === 'tutorial') return (
                 <div className="archive-overlay select-none text-gray-900">
-                    <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Tutorial</h2>
-                            <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
-                        </div>
-                    </header>
-                    <main className="archive-content scroll-content px-6 pt-6 pb-24 hide-scrollbar bg-gray-50 space-y-10 safe-pb">
-                        <section>
-                            <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3">Filosofia della Fucina</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco d'azzardo, ma una palestra per la tua mente. L'obiettivo non è vincere ogni mano (impossibile!), ma prendere la decisione matematicamente corretta (GTO) ogni singola volta. La vittoria è solo una conseguenza della disciplina a lungo termine.</p>
-                        </section>
-
-                        <section className="bg-orange-50 p-5 rounded-2xl border border-orange-100">
-                            <h3 className="text-base font-black text-gray-800 uppercase tracking-widest mb-3 flex items-center">
-                                <span className="bg-orange-500 text-white w-6 h-6 flex items-center justify-center rounded-full mr-2 text-xs">?</span>
-                                Dov'è il "Check"?
-                            </h3>
-                            <div className="text-sm text-gray-700 leading-relaxed font-medium space-y-3">
-                                <p>Noterai che non esiste il tasto <b>Check</b>. Ecco perché:</p>
-                                <ul className="list-disc pl-4 space-y-2">
-                                    <li><b>Pre-Flop:</b> Se tocchi a te parlare per primo o se fronteggi una puntata, il Check non è permesso o è strategicamente sconsigliato (Limp). Devi aggredire o pagare.</li>
-                                    <li><b>Post-Flop:</b> Per rendere l'allenamento fluido, le azioni sono semplificate. Usa <b>Raise</b> per puntare/aggredire e <b>Call</b> per azioni passive (sia che tu debba chiamare una puntata, sia per fare Check-Back/Controllo).</li>
-                                </ul>
-                            </div>
-                        </section>
-
-                        <section>
-                            <h3 className="text-lg font-black text-green-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Swords /> <span className="ml-2">Attacco (RFI)</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Imparare quali mani aprire quando nessuno ha giocato prima di te.</p>
-                            <p className="text-sm text-gray-500 leading-relaxed">RFI sta per "Raise First In". In questa modalità sei il primo a parlare. Devi decidere se la tua mano è abbastanza forte per rilanciare (Raise) o se devi passare (Fold). La posizione al tavolo è fondamentale!</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-lg font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Shield /> <span className="ml-2">Difesa vs Raise</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Reagire correttamente a un'apertura avversaria.</p>
-                            <p className="text-sm text-gray-500 leading-relaxed">Qualcuno ha rilanciato prima di te. Hai tre opzioni: <b>Fold</b> (la mano è debole), <b>Call</b> (la mano è buona ma non vuoi ingrandire il piatto) o <b>Raise</b> (3-Bet, per isolare o per valore puro).</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Zap /> <span className="ml-2">Vs 3-Bet</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Difendere il tuo rilancio iniziale.</p>
-                            <p className="text-sm text-gray-500 leading-relaxed">Hai aperto il gioco, ma un avversario ti ha contro-rilanciato (3-Bet). La situazione scotta. Qui impari a non foldare troppo spesso, ma nemmeno a chiamare con mani dominate. Il tasto "Raise" qui diventa una "4-Bet" (un ulteriore rilancio).</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-lg font-black text-red-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Layout /> <span className="ml-2">Post-Flop</span></h3>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Leggere il board e non perdere chips inutilmente.</p>
-                            <p className="text-sm text-gray-500 leading-relaxed">Il gioco si sposta sulle carte comuni (Flop, Turn, River). Ti verranno presentati scenari specifici (es. "Hai Top Pair ma il board è connesso"). Devi decidere la linea migliore: aggressione (Raise), controllo/difesa (Call) o resa (Fold).</p>
-                        </section>
+                    <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10"><div className="flex justify-between items-center"><h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Tutorial</h2><button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button></div></header>
+                    <main className="archive-content scroll-content px-6 pt-6 pb-24 space-y-10 safe-pb">
+                        <section><h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3">Filosofia della Fucina</h3><p className="text-sm text-gray-600 leading-relaxed font-medium">PokerForge non è un gioco d'azzardo, ma una palestra per la tua mente. L'obiettivo non è vincere ogni mano, ma prendere la decisione matematicamente corretta (GTO) ogni volta.</p></section>
+                        <section className="bg-orange-50 p-5 rounded-2xl border border-orange-100"><h3 className="text-base font-black text-gray-800 uppercase tracking-widest mb-3 flex items-center"><span className="bg-orange-500 text-white w-6 h-6 flex items-center justify-center rounded-full mr-2 text-xs">?</span>Dov'è il "Check"?</h3><div className="text-sm text-gray-700 leading-relaxed font-medium space-y-3"><p>Non esiste il tasto <b>Check</b>. Ecco perché:</p><ul className="list-disc pl-4 space-y-2"><li><b>Pre-Flop:</b> Se tocchi a te parlare o se fronteggi una puntata, il Check non è permesso o è sconsigliato. Devi aggredire o pagare.</li><li><b>Post-Flop:</b> Azioni semplificate. Usa <b>Raise</b> per aggredire e <b>Call</b> per azioni passive (Chiamare o fare Check-Back).</li></ul></div></section>
+                        <section><h3 className="text-lg font-black text-green-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Swords /> <span className="ml-2">Attacco (RFI)</span></h3><p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Imparare quali mani aprire quando sei il primo a parlare.</p></section>
+                        <section><h3 className="text-lg font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Shield /> <span className="ml-2">Difesa vs Raise</span></h3><p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Reagire correttamente a un'apertura avversaria.</p></section>
+                        <section><h3 className="text-lg font-black text-orange-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Zap /> <span className="ml-2">Vs 3-Bet</span></h3><p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Difendere il tuo rilancio da una contro-aggressione.</p></section>
+                        <section><h3 className="text-lg font-black text-red-600 uppercase tracking-widest mb-3 flex items-center"><Icons.Layout /> <span className="ml-2">Post-Flop</span></h3><p className="text-sm text-gray-600 leading-relaxed font-medium mb-2"><b>Obiettivo:</b> Leggere il board e non perdere chips inutilmente.</p></section>
                     </main>
                 </div>
             );
 
             if (view === 'select-duration') return (
-                <div className="fixed inset-0 bg-gray-950 flex flex-col z-[100] px-5 safe-pt">
-                    <div className="flex-none border-b border-gray-800 pb-4"><button onClick={() => setView('start')} className="flex items-center text-gray-400 font-black uppercase text-xs tracking-widest"><Icons.ChevronLeft /> Indietro</button></div>
-                    <div className="flex-1 flex flex-col items-center justify-center space-y-10 scroll-content safe-pb">
-                        <div className="text-center"><h2 className="text-4xl font-black italic uppercase leading-none">{pendingMode==='vs3bet'?'Vs 3-Bet':pendingMode==='open'?'Attacco':pendingMode==='defense'?'Difesa':'Post-Flop'}</h2><p className="text-orange-500 text-[10px] mb-12 uppercase tracking-[0.3em] font-black italic text-center">Configura Sessione</p></div>
-                        <div className="w-full max-w-xs space-y-4">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Allenamento Casuale</p>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[30, 50, 100].map(n => (
-                                    <button key={n} onClick={() => initSession(n)} className="action-btn py-4 bg-gray-800 border border-gray-700 text-white rounded-xl font-black text-sm">{n} Mani</button>
-                                ))}
-                            </div>
-                            <div className="pt-4 space-y-3">
-                                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest text-center">Analisi Errori</p>
-                                <button 
-                                    disabled={failedHands.length === 0}
-                                    onClick={() => initSession(30, 'weak-spot')} 
-                                    className={`action-btn w-full py-5 rounded-2xl font-black border-2 flex justify-between px-6 items-center ${failedHands.length > 0 ? 'bg-orange-600/20 border-orange-500 text-orange-400' : 'bg-gray-900 border-gray-800 text-gray-700 opacity-50'}`}>
-                                    <div className='flex items-center'><Icons.Target /> <span className="ml-3 uppercase">Focus Punti Deboli</span></div>
-                                    <span className="text-[10px] font-mono">x1.5 XP</span>
-                                </button>
-                                {failedHands.length === 0 && <p className="text-[9px] text-gray-600 mt-2 italic uppercase font-black text-center leading-tight">Nessuna impurità rilevata qui</p>}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div className="fixed inset-0 bg-gray-950 flex flex-col z-[100] px-5 safe-pt"><div className="flex-none border-b border-gray-800 pb-4"><button onClick={() => setView('start')} className="flex items-center text-gray-400 font-black uppercase text-xs tracking-widest"><Icons.ChevronLeft /> Indietro</button></div><div className="flex-1 flex flex-col items-center justify-center space-y-10 scroll-content safe-pb"><div className="text-center"><h2 className="text-4xl font-black italic uppercase leading-none">{pendingMode==='vs3bet'?'Vs 3-Bet':pendingMode==='open'?'Attacco':pendingMode==='defense'?'Difesa':'Post-Flop'}</h2><p className="text-orange-500 text-[10px] mb-12 uppercase tracking-[0.3em] font-black italic text-center">Configura Sessione</p></div><div className="w-full max-w-xs space-y-4"><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">Allenamento Casuale</p><div className="grid grid-cols-3 gap-2">{[30, 50, 100].map(n => (<button key={n} onClick={() => initSession(n)} className="action-btn py-4 bg-gray-800 border border-gray-700 text-white rounded-xl font-black text-sm">{n} Mani</button>))}</div><div className="pt-4 space-y-3"><p className="text-[10px] font-black text-orange-500 uppercase tracking-widest text-center">Analisi Errori</p><button disabled={failedHands.length === 0} onClick={() => initSession(30, 'weak-spot')} className={`action-btn w-full py-5 rounded-2xl font-black border-2 flex justify-between px-6 items-center ${failedHands.length > 0 ? 'bg-orange-600/20 border-orange-500 text-orange-400' : 'bg-gray-900 border-gray-800 text-gray-700 opacity-50'}`}><div className='flex items-center'><Icons.Target /> <span className="ml-3 uppercase">Focus Punti Deboli</span></div><span className="text-[10px] font-mono">x1.5 XP</span></button>{failedHands.length === 0 && <p className="text-[9px] text-gray-600 mt-2 italic uppercase font-black text-center leading-tight">Nessuna impurità rilevata qui</p>}</div></div></div></div>
             );
 
             if (view === 'training' && currentHand) return (
-                <div className="fixed inset-0 bg-gray-100 flex flex-col text-gray-900 overflow-hidden z-[50]">
-                    <div className="bg-white border-b-2 p-5 flex justify-between items-center safe-pt">
-                        <div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic uppercase leading-none mb-1 uppercase">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div>
-                        <div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div>
-                    </div>
-                    {/* Timer Bar with Color Transition */}
-                    <div className="w-full h-2 bg-gray-200">
-                        <div className={`h-full transition-all duration-100 ${timeLeft < 80 ? 'bg-red-500' : timeLeft < 150 ? 'bg-yellow-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, (timeLeft/250)*100)}%` }}></div>
-                    </div>
-                    
-                    <main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content safe-pb">
-                        <div className="w-full max-w-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-6 py-4 shadow-xl text-center border-2 border-blue-500">
-                            <div className="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1">
-                            {currentHand.isPostFlop ? 'Situazione' : 'La Tua Posizione'}
-                        </div>
-                            <div className="text-2xl font-black italic">
-                                {currentHand.isPostFlop ? 'Analisi Board' : currentHand.heroPos}
-                        </div>
-                        </div>
-                        {currentHand.isPostFlop && (
-                            <div className="flex flex-col items-center space-y-3 w-full animate-in fade-in slide-in-from-top-4">
-                                <div className="flex space-x-3">{currentHand.board.map((c, i) => <Card key={i} v={c[0]} s={c[1]} small />)}</div>
-                                <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-gray-200 text-xs font-bold text-center italic shadow-sm leading-snug w-full">{currentHand.scenario}</div>
-                            </div>
-                        )}
-                        <div className="w-full bg-emerald-900 rounded-[3rem] p-10 shadow-2xl flex flex-col items-center border-8 border-emerald-800/50 relative overflow-hidden">
-                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/felt.png')] opacity-30"></div>
-                            <p className="relative z-10 text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic uppercase font-black">Tu (Hero)</p>
-                            <div className="relative z-10 flex space-x-6 scale-110"><Card v={currentHand.v1} s={currentHand.s1} /><Card v={currentHand.v2} s={currentHand.s2} /></div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3 w-full mt-auto safe-pb">
-                            <button onClick={() => handleAction('RAISE')} className="action-btn py-5 bg-orange-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">{session.mode==='vs3bet'?'4-Bet':(currentHand.mode==='postflop'?'Rilancia':'Raise')}</button>
-                            <button onClick={() => handleAction('CALL')} className="action-btn py-5 bg-blue-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">Chiama</button>
-                            <button onClick={() => handleAction('FOLD')} className="action-btn py-5 bg-white text-red-600 rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-gray-300 active:border-b-0 active:translate-y-1">Passa</button>
-                        </div>
-                    </main>
-                    {feedback && (
-                        <div className="fixed inset-0 bg-black/80 flex items-end justify-center z-[500] p-4 backdrop-blur-md">
-                            <div className="bg-white w-full max-w-md rounded-t-[3rem] p-10 shadow-2xl text-gray-900 text-center safe-pb animate-in slide-in-from-bottom-10 fade-in duration-300">
-                                <div className="text-7xl mb-6 animate-bounce">{feedback.icon}</div><h3 className="text-3xl font-black mb-4 italic uppercase tracking-tighter leading-none">{feedback.title}</h3>
-                                <div className="bg-blue-50 p-6 rounded-3xl mb-10 border border-blue-100 italic font-medium text-gray-700 text-sm leading-snug" dangerouslySetInnerHTML={{ __html: feedback.text }}></div>
-                                <button onClick={() => feedback.isFinal ? finishSession() : (setFeedback(null), setCurrentHand(generateHand(session.mode)), setTimeLeft(250))} className="action-btn w-full py-6 bg-gray-900 text-white rounded-3xl font-black text-xl italic uppercase tracking-widest shadow-xl">{feedback.isFinal ? 'Vedi Risultati' : 'Prossima Mano'}</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <div className="fixed inset-0 bg-gray-100 flex flex-col text-gray-900 overflow-hidden z-[50]"><div className="bg-white border-b-2 p-5 flex justify-between items-center safe-pt"><div className="text-left flex flex-col"><span className="text-[10px] text-blue-600 font-black uppercase tracking-widest leading-none mb-1">{session.mode} Mode</span><span className="font-black text-sm">{session.current+1} / {session.total}</span></div><div className="flex items-center text-orange-500 font-black text-lg"><Icons.Flame /> {session.streak}</div></div><div className="w-full h-2 bg-gray-200"><div className={`h-full transition-all duration-100 ${timeLeft < 80 ? 'bg-red-500' : timeLeft < 150 ? 'bg-yellow-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, (timeLeft/250)*100)}%` }}></div></div><main className="flex-1 p-6 flex flex-col items-center space-y-6 overflow-y-auto scroll-content safe-pb"><div className="w-full max-w-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-6 py-4 shadow-xl text-center border-2 border-blue-500"><div className="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1">{currentHand.isPostFlop ? 'Situazione' : 'La Tua Posizione'}</div><div className="text-2xl font-black italic">{currentHand.isPostFlop ? 'Analisi Board' : currentHand.heroPos}</div></div>{currentHand.isPostFlop && (<div className="flex flex-col items-center space-y-3 w-full animate-in fade-in slide-in-from-top-4"><div className="flex space-x-3">{currentHand.board.map((c, i) => <Card key={i} v={c[0]} s={c[1]} small />)}</div><div className="bg-white p-4 rounded-2xl border-2 border-dashed border-gray-200 text-xs font-bold text-center italic shadow-sm leading-snug w-full">{currentHand.scenario}</div></div>)}<div className="w-full bg-emerald-900 rounded-[3rem] p-10 shadow-2xl flex flex-col items-center border-8 border-emerald-800/50 relative overflow-hidden"><div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/felt.png')] opacity-30"></div><p className="relative z-10 text-[10px] font-black text-white/50 uppercase tracking-[0.3em] mb-4 italic">Tu (Hero)</p><div className="relative z-10 flex space-x-6 scale-110"><Card v={currentHand.v1} s={currentHand.s1} /><Card v={currentHand.v2} s={currentHand.s2} /></div></div><div className="grid grid-cols-3 gap-3 w-full mt-auto safe-pb"><button onClick={() => handleAction('RAISE')} className="action-btn py-5 bg-orange-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">{session.mode==='vs3bet'?'4-Bet':(currentHand.mode==='postflop'?'Rilancia':'Raise')}</button><button onClick={() => handleAction('CALL')} className="action-btn py-5 bg-blue-600 text-white rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">Chiama</button><button onClick={() => handleAction('FOLD')} className="action-btn py-5 bg-white text-red-600 rounded-2xl font-black shadow-xl uppercase italic text-lg border-b-4 border-gray-300 active:border-b-0 active:translate-y-1">Passa</button></div></main>{feedback && (<div className="fixed inset-0 bg-black/80 flex items-end justify-center z-[500] p-4 backdrop-blur-md"><div className="bg-white w-full max-w-md rounded-t-[3rem] p-10 shadow-2xl text-gray-900 text-center safe-pb animate-in slide-in-from-bottom-10 fade-in duration-300"><div className="text-7xl mb-6 animate-bounce">{feedback.icon}</div><h3 className="text-3xl font-black mb-4 italic uppercase tracking-tighter leading-none">{feedback.title}</h3><div className="bg-blue-50 p-6 rounded-3xl mb-10 border border-blue-100 italic font-medium text-gray-700 text-sm leading-snug" dangerouslySetInnerHTML={{ __html: feedback.text }}></div><button onClick={() => feedback.isFinal ? finishSession() : (setFeedback(null), setCurrentHand(generateHand(session.mode)), setTimeLeft(250))} className="action-btn w-full py-6 bg-gray-900 text-white rounded-3xl font-black text-xl italic uppercase tracking-widest shadow-xl">{feedback.isFinal ? 'Vedi Risultati' : 'Prossima Mano'}</button></div></div>)}</div>
             );
 
             if (view === 'summary') {
                 const counts = session.errors.reduce((acc, advice) => { acc[advice] = (acc[advice] || 0) + 1; return acc; }, {});
                 const mainAdvice = Object.entries(counts).sort((a,b) => b[1]-a[1])[0]?.[0];
-                return (
-                    <div className="fixed inset-0 bg-white flex flex-col p-10 items-center justify-center text-center text-gray-900 select-none z-[110]">
-                        <h2 className="text-5xl font-black mb-2 italic uppercase tracking-tighter leading-none text-gray-900 uppercase">Sessione Finita</h2><p className="text-xl text-blue-600 font-bold mb-8 tracking-tight font-mono uppercase italic text-center">Precisione: {Math.round((session.correct/session.total)*100)}%</p>
-                        <div className="w-full max-w-xs bg-gray-50 p-10 rounded-[4rem] border border-gray-100 mb-8 shadow-inner mx-auto text-5xl font-black">+{Math.round(session.correct*25*session.xpBonus)} XP</div>
-                        {mainAdvice && (
-                            <div className="mb-12 bg-orange-50 p-6 rounded-3xl border border-orange-100 italic font-medium text-gray-600 text-sm leading-tight text-left">
-                                <span className="text-orange-600 font-black uppercase text-[10px] block mb-2 tracking-widest">Consiglio della Fucina</span>
-                                In questa sessione hai faticato maggiormente con: <b className="text-gray-900">{mainAdvice}</b>.
-                            </div>
-                        )}
-                        <button onClick={() => setView('start')} className="action-btn w-full max-w-xs py-6 bg-gray-900 text-white rounded-3xl font-black text-lg shadow-xl uppercase italic tracking-widest">Menu Principale</button>
-                    </div>
-                );
+                return (<div className="fixed inset-0 bg-white flex flex-col p-10 items-center justify-center text-center text-gray-900 select-none z-[110]"><h2 className="text-5xl font-black mb-2 italic uppercase tracking-tighter leading-none uppercase">Sessione Finita</h2><p className="text-xl text-blue-600 font-bold mb-8 tracking-tight font-mono uppercase italic text-center">Precisione: {Math.round((session.correct/session.total)*100)}%</p><div className="w-full max-w-xs bg-gray-50 p-10 rounded-[4rem] border border-gray-100 mb-8 shadow-inner mx-auto text-5xl font-black">+{Math.round(session.correct*25*session.xpBonus)} XP</div>{mainAdvice && (<div className="mb-12 bg-orange-50 p-6 rounded-3xl border border-orange-100 italic font-medium text-gray-600 text-sm leading-tight text-left"><span className="text-orange-600 font-black uppercase text-[10px] block mb-2 tracking-widest">Consiglio della Fucina</span>In questa sessione hai faticato con: <b className="text-gray-900">{mainAdvice}</b>.</div>)}<button onClick={() => setView('start')} className="action-btn w-full max-w-xs py-6 bg-gray-900 text-white rounded-3xl font-black text-lg shadow-xl uppercase italic tracking-widest">Menu Principale</button></div>);
             }
 
             if (view === 'history') return (
-                <div className="archive-overlay select-none text-gray-900">
-                    <header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none font-black text-gray-900">Archivio</h2>
-                            <button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button>
-                        </div>
-                    </header>
-                    <main className="archive-content scroll-content px-5 pt-6 pb-24 hide-scrollbar bg-gray-50 safe-pb">
-                        {history.length > 0 ? history.map((s, i) => (
-                            <div key={i} className="bg-white p-5 mb-3 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100">
-                                <div className="text-left flex flex-col">
-                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">{new Date(s.date).toLocaleDateString()}</p>
-                                    <p className="font-black text-gray-800 italic uppercase leading-none text-xs">{s.mode} - {s.hands} Mani</p>
-                                </div>
-                                <div className="text-right text-blue-600 font-black text-2xl italic leading-none">{s.acc}%</div>
-                            </div>
-                        )) : <p className="text-gray-400 italic text-center py-20 text-sm uppercase font-black opacity-30 leading-none">Nessuna sessione registrata</p>}
-                    </main>
-                </div>
+                <div className="archive-overlay select-none text-gray-900"><header className="flex-none bg-white border-b border-gray-200 px-6 safe-pt pb-4 shadow-sm z-10"><div className="flex justify-between items-center"><h2 className="text-2xl font-black italic tracking-tighter uppercase font-black text-gray-900 text-2xl uppercase">Archivio</h2><button onClick={() => setView('start')} className="p-2 bg-gray-100 rounded-full text-gray-500 active:bg-gray-200"><Icons.X /></button></div></header><main className="archive-content scroll-content px-5 pt-6 pb-24">{history.length > 0 ? history.map((s, i) => (<div key={i} className="bg-white p-5 mb-3 rounded-[2rem] flex justify-between items-center shadow-sm border border-gray-100"><div className="text-left flex flex-col"><p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2">{new Date(s.date).toLocaleDateString()}</p><p className="font-black text-gray-800 italic uppercase leading-none text-xs">{s.mode} - {s.hands} Mani</p></div><div className="text-right text-blue-600 font-black text-2xl italic leading-none">{s.acc}%</div></div>)) : <p className="text-gray-400 italic text-center py-20 text-sm uppercase font-black opacity-30 leading-none">Nessuna sessione registrata</p>}</main></div>
             );
             return null;
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+        
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registered!', reg)).catch(err => console.log('SW failed', err));
+            });
+        }
     </script>
 </body>
 </html>
